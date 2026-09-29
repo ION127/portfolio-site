@@ -1,0 +1,58 @@
+:root {
+  color-scheme: light;
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface2: #fbfaf7;
+  --border: #e4e0d6;
+  --line: #c9c4b7;
+  --text: #16150f;
+  --muted: #6d695f;
+  --faint: #a29e93; /* 장식 전용: 글자에 쓰지 않는다 */
+  --accent: #d9480f; /* 그래픽 전용: 글자에는 --accent-text */
+  --accent-text: #b93c0a;
+  --accent-soft: #fbe3d6;
+  --zone-client: #f1efe9;
+  --zone-cloud: #fcf4ec;
+  --zone-onprem: #eef3ef;
+  --shadow: 0 8px 28px rgba(40, 30, 10, 0.07);
+
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+    'Malgun Gothic', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, ui-monospace, monospace;
+
+  --radius-card: 14px;
+  --radius-box: 12px;
+  --radius-chip: 6px;
+
+  --dur-highlight: 300ms;
+  --dur-fade: 600ms;
+
+  --container: 1280px;
+  --container-wide: 1440px;
+  --gutter: 40px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #131311;
+  --surface: #1c1b18;
+  --surface2: #23221e;
+  --border: #302e29;
+  --line: #4d4a41;
+  --text: #f1eee6;
+  --muted: #a9a497;
+  --faint: #6f6b61;
+  --accent: #ff7b3a;
+  --accent-text: #ff7b3a;
+  --accent-soft: #3b2519;
+  --zone-client: #181815;
+  --zone-cloud: #1e1a15;
+  --zone-onprem: #151a16;
+  --shadow: none;
+}
+
+@media (max-width: 899px) {
+  :root {
+    --gutter: 16px;
+  }
+}

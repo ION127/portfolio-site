@@ -1,0 +1,43 @@
+---
+import '../styles/global.css';
+// Pretendard는 서브셋 선언이 92개(약 30KB)라 첫 화면을 막지 않도록 비동기로 적용한다(head의 link 참고).
+import pretendardHref from 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css?url';
+import '@fontsource/jetbrains-mono/latin-400.css';
+
+interface Props {
+  title: string;
+  description: string;
+  locale: 'ko' | 'en';
+}
+const { title, description, locale } = Astro.props;
+---
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={pretendardHref} as="style" />
+    <link rel="stylesheet" href={pretendardHref} media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href={pretendardHref} /></noscript>
+    <script is:inline>
+      (function () {
+        var theme = null;
+        try {
+          theme = window.localStorage.getItem('theme');
+        } catch (e) {
+          theme = null;
+        }
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

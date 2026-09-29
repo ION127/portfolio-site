@@ -8,6 +8,8 @@ import DecisionCard from './DecisionCard.astro';
 import DemoPlaceholder from './DemoPlaceholder.astro';
 import { localizePath, t, type Locale } from '../i18n';
 import { SITE, type ProjectSlug } from '../lib/site';
+import ScrollyDiagram from '../islands/ScrollyDiagram.tsx';
+import { DIAGRAMS } from '../diagrams';
 
 interface Props {
   locale: Locale;
@@ -32,6 +34,7 @@ const Infra = await prose('infra');
 const Contribution = await prose('contribution');
 const Retrospective = await prose('retrospective');
 const pending = t(locale, 'section.pending');
+const hasDiagram = DIAGRAMS[p.diagram] !== undefined;
 ---
 <BaseLayout title={`${p.title} · ${SITE.author[locale]}`} description={p.description} locale={locale} wide>
   <div class="container wide project">
@@ -57,7 +60,14 @@ const pending = t(locale, 'section.pending');
       </Section>
 
       <Section id="architecture" title={t(locale, 'section.architecture')}>
-        <p class="pending">{pending}</p>
+        {hasDiagram ? (
+          <>
+            <p class="hint">{t(locale, 'architecture.hint')}</p>
+            <ScrollyDiagram client:visible diagram={p.diagram} locale={locale} />
+          </>
+        ) : (
+          <p class="pending">{pending}</p>
+        )}
       </Section>
 
       <Section id="demo" title={t(locale, 'section.demo')}>
@@ -173,6 +183,11 @@ const pending = t(locale, 'section.pending');
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
     max-width: 860px;
+  }
+  .hint {
+    font-size: 13px;
+    color: var(--muted);
+    margin: -6px 0 0;
   }
   @media (max-width: 1199px) {
     .project {

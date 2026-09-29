@@ -1,0 +1,63 @@
+.scrolly { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 30px; align-items: start; }
+.scrolly .s-text { padding: 18vh 0 42vh; }
+.scrolly .chap { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; margin: 0 0 14px; color: var(--muted); transition: color var(--dur-highlight); }
+.scrolly .chap.act { color: var(--text); }
+.scrolly .chap em { font-style: normal; color: var(--accent-text); margin-right: 6px; }
+.scrolly .scard { margin: 0 0 36vh; padding: 2px 0 2px 16px; border-left: 3px solid transparent; color: var(--muted); transition: color var(--dur-highlight), border-color var(--dur-highlight); }
+.scrolly .scard.act { color: var(--text); border-left-color: var(--accent); }
+.scrolly .scard.chap-end { margin-bottom: 26vh; }
+.scrolly .scard p { margin: 0; font-size: 15.5px; line-height: 1.85; }
+.scrolly .scard code { font-family: var(--font-mono); font-size: 13.5px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+.scrolly .facts { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.scrolly .facts span { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-chip); padding: 1px 7px; }
+.scrolly .s-fig { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+.scrolly .sfig-in { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-box); box-shadow: var(--shadow); }
+.scrolly .scap { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 16px 0; font-size: 12.5px; }
+.scrolly .scap .ch { font-weight: 800; }
+.scrolly .scap .ch em { font-style: normal; color: var(--accent-text); margin-right: 6px; }
+.scrolly .scap .cnt { color: var(--muted); font-family: var(--font-mono); font-size: 11.5px; white-space: nowrap; }
+.scrolly .sbar { height: 3px; background: var(--border); margin: 8px 16px 0; border-radius: 3px; overflow: hidden; }
+.scrolly .sbar i { display: block; height: 100%; background: var(--accent); transition: width 400ms ease; }
+.scrolly .arch { display: block; width: 100%; height: auto; padding: 4px 6px 6px; }
+.scrolly .arch .zone { stroke: var(--border); stroke-width: 1; }
+.scrolly .arch .z-client { fill: var(--zone-client); }
+.scrolly .arch .z-cloud { fill: var(--zone-cloud); }
+.scrolly .arch .z-onprem { fill: var(--zone-onprem); }
+.scrolly .arch .zl { font: 700 11.5px var(--font-sans); fill: var(--muted); }
+.scrolly .arch .zl2 { font: 10.5px var(--font-mono); fill: var(--muted); }
+.scrolly .arch .edge { fill: none; stroke: var(--line); stroke-width: 1.6; transition: opacity var(--dur-highlight), stroke var(--dur-highlight); }
+.scrolly .arch .edge.lane { opacity: 0; }
+.scrolly .arch.focus .edge { opacity: 0.16; }
+.scrolly .arch.focus .edge.lane { opacity: 0; }
+.scrolly .arch.focus .edge.on { opacity: 1; stroke: var(--accent); stroke-width: 2.6; }
+.scrolly .arch.focus .edge.lane.on { stroke-dasharray: 5 4; }
+.scrolly .arch .node { transition: opacity var(--dur-highlight); outline: none; }
+.scrolly .arch .node .box { fill: var(--surface); stroke: var(--border); stroke-width: 1.3; transition: stroke var(--dur-highlight); }
+.scrolly .arch .node.ext .box { fill: var(--surface2); stroke-dasharray: 4 3; }
+.scrolly .arch .node:hover .box,
+.scrolly .arch .node:focus-visible .box { stroke: var(--accent); }
+.scrolly .arch.focus .node { opacity: 0.28; }
+.scrolly .arch.focus .node.on { opacity: 1; }
+.scrolly .arch.focus .node.on .box { stroke: var(--accent); stroke-width: 2; }
+.scrolly .arch .t { font: 700 13px var(--font-sans); fill: var(--text); pointer-events: none; }
+.scrolly .arch .s { font: 11px var(--font-sans); fill: var(--muted); pointer-events: none; }
+.scrolly .arch .tunnel { fill: var(--surface2); stroke: var(--line); stroke-dasharray: 6 4; }
+.scrolly .arch .node:hover .tunnel,
+.scrolly .arch .node:focus-visible .tunnel,
+.scrolly .arch.focus .node.on .tunnel { stroke: var(--accent); }
+.scrolly .arch .vpn-t { font: 700 11px var(--font-mono); fill: var(--muted); letter-spacing: 0.08em; pointer-events: none; }
+.scrolly .arch .pk { fill: var(--accent); }
+.scrolly .sd-tip { position: absolute; z-index: 9; max-width: 280px; pointer-events: none; background: var(--text); color: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.55; display: flex; flex-direction: column; gap: 2px; }
+.scrolly .sd-tip b { font-size: 12.5px; }
+.scrolly .sd-tip .k { opacity: 0.75; font-family: var(--font-mono); font-size: 11px; }
+
+@media (max-width: 899px) {
+  .scrolly { display: flex; flex-direction: column-reverse; gap: 0; }
+  .scrolly .s-fig { height: auto; z-index: 5; background: var(--bg); padding: 8px 0; }
+  .scrolly .arch { max-height: calc(45vh - 56px); }
+  .scrolly .s-text { padding: 4vh 0 30vh; }
+  .scrolly .chap { margin-top: 12vh; }
+  .scrolly .scard { margin-bottom: 40vh; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-box); }
+  .scrolly .scard.act { border-color: var(--accent); }
+  .scrolly .scard.chap-end { margin-bottom: 30vh; }
+}

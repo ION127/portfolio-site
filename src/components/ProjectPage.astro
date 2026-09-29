@@ -1,0 +1,188 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from './Section.astro';
+import Toc from './Toc.astro';
+import IncidentCard from './IncidentCard.astro';
+import DecisionCard from './DecisionCard.astro';
+import DemoPlaceholder from './DemoPlaceholder.astro';
+import { localizePath, t, type Locale } from '../i18n';
+import { SITE, type ProjectSlug } from '../lib/site';
+
+interface Props {
+  locale: Locale;
+  project: CollectionEntry<'projects'>;
+}
+const { locale, project } = Astro.props;
+const slug = project.id.split('/')[1] as ProjectSlug;
+const p = project.data;
+const inLocale = (id: string) => id.startsWith(`${locale}/`);
+const byOrder = (a: { data: { order: number } }, b: { data: { order: number } }) => a.data.order - b.data.order;
+
+const incidents = (await getCollection('incidents', (e) => inLocale(e.id) && e.data.project === slug)).sort(byOrder);
+const decisions = (await getCollection('decisions', (e) => inLocale(e.id) && e.data.project === slug)).sort(byOrder);
+// 없는 항목을 getEntry로 찾으면 빌드 경고가 나므로, 목록에서 찾는다.
+const proseEntries = await getCollection('sections', (e) => e.id.startsWith(`${locale}/${slug}/`));
+async function prose(name: 'overview' | 'infra' | 'contribution' | 'retrospective') {
+  const entry = proseEntries.find((e) => e.id === `${locale}/${slug}/${name}`);
+  return entry ? (await render(entry)).Content : null;
+}
+const Overview = await prose('overview');
+const Infra = await prose('infra');
+const Contribution = await prose('contribution');
+const Retrospective = await prose('retrospective');
+const pending = t(locale, 'section.pending');
+---
+<BaseLayout title={`${p.title} · ${SITE.author[locale]}`} description={p.description} locale={locale} wide>
+  <div class="container wide project">
+    <aside class="toc-col"><Toc locale={locale} /></aside>
+    <main id="main" class="main-col">
+      <header class="head">
+        <a class="back" href={localizePath('/#projects', locale)}>← {t(locale, 'project.back')}</a>
+        <h1>{p.title}</h1>
+        <ul class="chips">
+          <li>{p.period}</li>
+          <li>{p.team} · {p.role}</li>
+          {p.metaChips.map((chip) => <li>{chip}</li>)}
+        </ul>
+      </header>
+
+      <Section id="overview" title={t(locale, 'section.overview')}>
+        <div class="prose">{Overview ? <Overview /> : <p class="pending">{pending}</p>}</div>
+        <ul class="links">
+          {p.links.map((link) => (
+            <li><a href={link.href} target="_blank" rel="noopener">{link.label} ↗</a></li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section id="architecture" title={t(locale, 'section.architecture')}>
+        <p class="pending">{pending}</p>
+      </Section>
+
+      <Section id="demo" title={t(locale, 'section.demo')}>
+        <DemoPlaceholder locale={locale} project={slug} />
+      </Section>
+
+      <Section id="ops" title={t(locale, 'section.ops')}>
+        {incidents.length > 0 ? (
+          <div class="card-list">{incidents.map((entry) => <IncidentCard entry={entry} locale={locale} variant="full" />)}</div>
+        ) : (
+          <p class="pending">{pending}</p>
+        )}
+      </Section>
+
+      <Section id="decisions" title={t(locale, 'section.decisions')}>
+        {decisions.length > 0 ? (
+          <div class="card-list">{decisions.map((entry) => <DecisionCard entry={entry} locale={locale} />)}</div>
+        ) : (
+          <p class="pending">{pending}</p>
+        )}
+      </Section>
+
+      <Section id="infra" title={t(locale, 'section.infra')}>
+        <div class="prose">{Infra ? <Infra /> : <p class="pending">{pending}</p>}</div>
+      </Section>
+
+      <Section id="contribution" title={t(locale, 'section.contribution')}>
+        <div class="prose">{Contribution ? <Contribution /> : <p class="pending">{pending}</p>}</div>
+      </Section>
+
+      <Section id="retrospective" title={t(locale, 'section.retrospective')}>
+        <div class="prose">{Retrospective ? <Retrospective /> : <p class="pending">{pending}</p>}</div>
+      </Section>
+    </main>
+  </div>
+</BaseLayout>
+
+<style>
+  .project {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+  .toc-col {
+    border-right: 1px solid var(--border);
+  }
+  .main-col {
+    padding: 22px 0 80px 30px;
+    min-width: 0;
+  }
+  .back {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .back:hover {
+    color: var(--accent-text);
+  }
+  h1 {
+    font-size: 28px;
+    letter-spacing: -0.8px;
+    margin: 8px 0 10px;
+    font-weight: 800;
+  }
+  .chips {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chips li {
+    font-size: 12.5px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 2px 10px;
+  }
+  .prose {
+    max-width: 680px;
+  }
+  .prose :global(h3) {
+    font-size: 17px;
+    margin: 26px 0 8px;
+  }
+  .prose :global(ul) {
+    padding-left: 20px;
+  }
+  .prose :global(code) {
+    font-size: 0.88em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0 4px;
+  }
+  .links {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .links a {
+    color: var(--accent-text);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .card-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    max-width: 860px;
+  }
+  @media (max-width: 1199px) {
+    .project {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .toc-col {
+      display: none;
+    }
+    .main-col {
+      padding-left: 0;
+    }
+  }
+</style>

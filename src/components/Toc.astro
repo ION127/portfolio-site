@@ -1,0 +1,82 @@
+---
+import { PROJECT_SECTIONS } from '../lib/site';
+import { t, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+---
+<nav class="toc" aria-label={t(locale, 'toc.label')}>
+  <ol>
+    {PROJECT_SECTIONS.map((id) => (
+      <li><a href={`#${id}`} data-toc={id}>{t(locale, `section.${id}`)}</a></li>
+    ))}
+  </ol>
+</nav>
+
+<script>
+  const links = new Map<string, HTMLAnchorElement>();
+  document.querySelectorAll<HTMLAnchorElement>('.toc a[data-toc]').forEach((a) => {
+    if (a.dataset.toc) links.set(a.dataset.toc, a);
+  });
+  const sections = [...links.keys()]
+    .map((id) => document.getElementById(id))
+    .filter((el): el is HTMLElement => el !== null);
+
+  function update() {
+    const line = window.innerHeight * 0.3;
+    let current = sections[0]?.id;
+    for (const s of sections) if (s.getBoundingClientRect().top <= line) current = s.id;
+    links.forEach((a, id) => {
+      if (id === current) a.setAttribute('aria-current', 'location');
+      else a.removeAttribute('aria-current');
+    });
+  }
+
+  let ticking = false;
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    },
+    { passive: true },
+  );
+  update();
+</script>
+
+<style>
+  .toc {
+    position: sticky;
+    top: 12px;
+    padding: 28px 0;
+  }
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 13px;
+    line-height: 2.1;
+  }
+  a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--text);
+  }
+  a[aria-current='location'] {
+    color: var(--accent-text);
+    font-weight: 700;
+  }
+  a[aria-current='location']::before {
+    content: '● ';
+    font-size: 9px;
+    vertical-align: 2px;
+  }
+</style>

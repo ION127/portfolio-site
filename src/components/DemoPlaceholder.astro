@@ -1,0 +1,32 @@
+---
+import { t, type Locale } from '../i18n';
+import type { ProjectSlug } from '../lib/site';
+
+interface Props {
+  locale: Locale;
+  project: ProjectSlug;
+}
+const { locale, project } = Astro.props;
+---
+<div class="demo-ph">
+  <p class="what">{t(locale, `demo.${project}`)}</p>
+  <p class="when">{t(locale, 'demo.pending')}</p>
+</div>
+
+<style>
+  .demo-ph {
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius-box);
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .what {
+    margin: 0 0 6px;
+    font-size: 15px;
+  }
+  .when {
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { t, type Locale } from '../i18n';
+
+interface Props {
+  entry: CollectionEntry<'decisions'>;
+  locale: Locale;
+}
+const { entry, locale } = Astro.props;
+const d = entry.data;
+---
+<article class="decision" id={`decision-${entry.id.split('/')[1]}`}>
+  <h3>{d.title}</h3>
+  <dl>
+    <dt>{t(locale, 'decision.context')}</dt>
+    <dd>{d.context}</dd>
+    <dt>{t(locale, 'decision.alternatives')}</dt>
+    <dd>
+      <ul>{d.alternatives.map((a) => <li>{a}</li>)}</ul>
+    </dd>
+    <dt>{t(locale, 'decision.rationale')}</dt>
+    <dd>{d.rationale}</dd>
+    <dt>{t(locale, 'decision.tradeoff')}</dt>
+    <dd>{d.tradeoff}</dd>
+  </dl>
+</article>
+
+<style>
+  .decision {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-box);
+    padding: 16px 18px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    letter-spacing: -0.3px;
+  }
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 6px 10px;
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+  dt {
+    color: var(--muted);
+    font-weight: 700;
+  }
+  dd {
+    margin: 0;
+  }
+  ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+  @media (max-width: 599px) {
+    dl {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2px 0;
+    }
+    dd {
+      margin-bottom: 6px;
+    }
+  }
+</style>

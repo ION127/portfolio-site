@@ -69,4 +69,14 @@ test.describe('BARO architecture — side by side', () => {
     await page.locator('.arch [data-node="kafka"]').hover();
     await expect(page.locator('.sd-tip')).toContainText('EC2 t3.small');
   });
+
+  test('StockPulse renders its own diagram with the Kafka bus', async ({ page }) => {
+    await page.goto('/projects/stockpulse/');
+    await waitForScrolly(page);
+    await expect(page.locator('.scard')).toHaveCount(14);
+    await expect(page.locator('.arch [data-tunnel="kafka"]')).toBeVisible();
+    await scrollToStep(page, 3);
+    await expect(page.locator('.arch [data-edge="k1"]')).toHaveClass(/\bon\b/);
+    await expect(page.locator('.arch [data-node="detector"]')).toHaveClass(/\bon\b/);
+  });
 });

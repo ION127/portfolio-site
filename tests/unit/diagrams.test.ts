@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { baro } from '../../src/diagrams/baro';
+import { stockpulse } from '../../src/diagrams/stockpulse';
 import { validateSpec } from '../../src/lib/diagram/validate';
 import { formatView, targetView } from '../../src/lib/diagram/view';
 import { parseRef } from '../../src/lib/diagram/routes';
@@ -39,5 +40,27 @@ describe('BARO diagram data', () => {
 
   it('zooms the dispatch-lock step to the same box as the approved prototype', () => {
     expect(formatView(targetView(baro, baro.steps[5], false))).toBe('137.50 0.00 770.00 406.00');
+  });
+});
+
+describe('StockPulse diagram data', () => {
+  it('is internally consistent', () => {
+    expect(validateSpec(stockpulse)).toEqual([]);
+  });
+
+  it('has 8 chapters, 14 steps and 23 nodes around a Kafka bus', () => {
+    expect(stockpulse.chapters).toHaveLength(8);
+    expect(stockpulse.steps).toHaveLength(14);
+    expect(stockpulse.nodes).toHaveLength(23);
+    expect(stockpulse.tunnels.map((t) => t.id)).toEqual(['kafka']);
+  });
+
+  it('uses every edge and every shape in at least one step', () => {
+    const edges = usedEdges(stockpulse);
+    for (const e of stockpulse.edges) expect(edges.has(e.id), e.id).toBe(true);
+    const shapes = usedShapes(stockpulse);
+    for (const id of [...stockpulse.nodes.map((n) => n.id), ...stockpulse.tunnels.map((t) => t.id)]) {
+      expect(shapes.has(id), id).toBe(true);
+    }
   });
 });

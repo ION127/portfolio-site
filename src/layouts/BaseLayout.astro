@@ -3,13 +3,18 @@ import '../styles/global.css';
 // Pretendard는 서브셋 선언이 92개(약 30KB)라 첫 화면을 막지 않도록 비동기로 적용한다(head의 link 참고).
 import pretendardHref from 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css?url';
 import '@fontsource/jetbrains-mono/latin-400.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import type { Locale } from '../i18n';
 
 interface Props {
   title: string;
   description: string;
-  locale: 'ko' | 'en';
+  locale: Locale;
+  wide?: boolean;
+  showLangToggle?: boolean;
 }
-const { title, description, locale } = Astro.props;
+const { title, description, locale, wide = false, showLangToggle = true } = Astro.props;
 ---
 <!doctype html>
 <html lang={locale}>
@@ -38,6 +43,8 @@ const { title, description, locale } = Astro.props;
     </script>
   </head>
   <body>
+    <Nav locale={locale} wide={wide} showLangToggle={showLangToggle} />
     <slot />
+    <Footer locale={locale} wide={wide} />
   </body>
 </html>

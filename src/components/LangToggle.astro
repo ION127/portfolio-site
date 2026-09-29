@@ -1,0 +1,37 @@
+---
+import { switchLocalePath, t, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const other: Locale = locale === 'ko' ? 'en' : 'ko';
+const href = switchLocalePath(Astro.url.pathname, other);
+---
+<div class="lang">
+  <span class="cur">{locale.toUpperCase()}</span>
+  <span aria-hidden="true">/</span>
+  <a class="other" href={href} hreflang={other} lang={other} aria-label={t(locale, 'lang.switchTo')}>
+    {other.toUpperCase()}
+  </a>
+</div>
+
+<style>
+  .lang {
+    display: flex;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .cur {
+    color: var(--text);
+    font-weight: 700;
+  }
+  .other {
+    text-decoration: none;
+    color: var(--muted);
+  }
+  .other:hover {
+    color: var(--accent-text);
+  }
+</style>

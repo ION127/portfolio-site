@@ -1,0 +1,32 @@
+---
+import { t, type Locale } from '../i18n';
+import { SITE } from '../lib/site';
+
+interface Props {
+  locale: Locale;
+  wide?: boolean;
+}
+const { locale, wide = false } = Astro.props;
+---
+<footer class="site-footer">
+  <div class:list={['container', 'row', { wide }]}>
+    <span>© 2026 {SITE.author[locale]}</span>
+    <span>{t(locale, 'footer.builtWith')}</span>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 20px;
+    padding-bottom: 28px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+</style>

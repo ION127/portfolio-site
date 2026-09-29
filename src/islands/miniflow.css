@@ -1,0 +1,15 @@
+.miniflow { margin: 0; }
+.miniflow .mf-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12.5px; margin-bottom: 6px; }
+.miniflow .mf-dots { display: flex; gap: 5px; }
+.miniflow .mf-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--border); display: block; transition: background var(--dur-highlight); }
+.miniflow .mf-dots i.on { background: var(--accent); }
+.miniflow svg { width: 100%; height: auto; display: block; }
+.miniflow .mf-scene { transition: opacity var(--dur-fade); }
+.miniflow .mf-e { stroke: var(--line); stroke-width: 1.5; fill: none; }
+.miniflow .mf-dashed { stroke-dasharray: 4 3; }
+.miniflow .mf-b { fill: var(--surface2); stroke: var(--border); stroke-width: 1.2; }
+.miniflow .mf-t { font: 700 12px var(--font-sans); fill: var(--text); }
+.miniflow .mf-s { font: 10px var(--font-sans); fill: var(--muted); }
+.miniflow .mf-l { font: 700 9.5px var(--font-sans); fill: var(--accent-text); }
+.miniflow .mf-dot { fill: var(--accent); }
+.miniflow .mf-cap { margin: 4px 0 0; font-size: 11.5px; color: var(--muted); }

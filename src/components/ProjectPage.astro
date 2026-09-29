@@ -9,6 +9,7 @@ import DemoPlaceholder from './DemoPlaceholder.astro';
 import { localizePath, t, type Locale } from '../i18n';
 import { SITE, type ProjectSlug } from '../lib/site';
 import ScrollyDiagram from '../islands/ScrollyDiagram.tsx';
+import MiniFlow from '../islands/MiniFlow.tsx';
 import { DIAGRAMS } from '../diagrams';
 
 interface Props {
@@ -91,6 +92,9 @@ const hasDiagram = DIAGRAMS[p.diagram] !== undefined;
       </Section>
 
       <Section id="infra" title={t(locale, 'section.infra')}>
+        <div class="pipeline">
+          <MiniFlow client:visible scenes={[p.pipelineScene]} locale={locale} mode="loop" />
+        </div>
         <div class="prose">{Infra ? <Infra /> : <p class="pending">{pending}</p>}</div>
       </Section>
 
@@ -188,6 +192,14 @@ const hasDiagram = DIAGRAMS[p.diagram] !== undefined;
     font-size: 13px;
     color: var(--muted);
     margin: -6px 0 0;
+  }
+  .pipeline {
+    max-width: 560px;
+    margin: 0 0 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-box);
+    padding: 12px 14px;
   }
   @media (max-width: 1199px) {
     .project {

@@ -1,0 +1,15 @@
+order: 1
+title: 'BARO — 자율주행 택시 호출 · 관제 플랫폼'
+period: '2026.04 – 06'
+team: '5인 팀'
+role: 'BE / DevOps'
+summary: '차량 1,500대의 위치를 MQTT → Kafka로 받아 배차 · 재배치하고, AWS 서비스와 온프레미스 분석 · 관측을 VPN으로 묶어 운영한 하이브리드 클라우드.'
+description: '자율주행 택시 호출 · 관제 플랫폼 BARO의 하이브리드 클라우드 아키텍처, 운영 기록, 설계 결정.'
+metaChips: ['AWS ECS · Terraform', 'MQTT · Kafka', 'OpenStack · K3s']
+tags: ['AWS ECS', 'Terraform', 'MQTT', 'Kafka', 'Valkey', 'OpenStack · K3s', 'Airflow', 'Prometheus']
+links:
+  - label: 'GitHub · baro-team'
+    href: 'https://github.com/orgs/baro-team/repositories'
+diagram: baro
+miniScene: baro-telemetry
+pipelineScene: baro-cicd

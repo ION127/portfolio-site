@@ -1,0 +1,47 @@
+hero:
+  kicker: 'CLOUD / INFRA ENGINEER'
+  titleLines:
+    - '서비스가 멈추지 않도록'
+    - '설계하고, 운영합니다.'
+  lead: 'AWS와 온프레미스를 VPN으로 잇는 하이브리드 인프라, Kafka 기반 실시간 파이프라인, GitOps로 운영하는 쿠버네티스를 직접 만들고 운영했습니다.'
+  miniCaption: '두 프로젝트의 핵심 흐름이 번갈아 재생돼요'
+metrics:
+  - value: '1,500'
+    unit: '대'
+    lines: ['차량 동시 시뮬레이션을', 'MQTT → Kafka로 처리']
+    project: baro
+    factId: baro.vehicles
+  - value: '2.9M'
+    unit: ''
+    lines: ['Kafka consumer lag을', '원인 추적 후 해소']
+    project: baro
+    factId: baro.lag
+  - value: '26'
+    unit: '개'
+    lines: ['K8s 워크로드를', 'ArgoCD GitOps로 운영']
+    project: stockpulse
+    factId: stockpulse.workloads
+  - value: '108'
+    unit: '종목'
+    lines: ['한 · 미 1분봉을', '실시간 이상 탐지']
+    project: stockpulse
+    factId: stockpulse.tickers
+stack:
+  - group: 'Cloud · AWS'
+    items: ['ECS Fargate', 'EC2', 'RDS', 'ElastiCache', 'ALB', 'Route53', 'Site-to-Site VPN', 'Secrets Manager', 'CloudWatch']
+  - group: 'IaC · CI/CD'
+    items: ['Terraform', 'GitHub Actions', 'self-hosted runner', 'CodeDeploy Blue/Green', 'ArgoCD', 'Sealed Secrets']
+  - group: 'Container · Orchestration'
+    items: ['Kubernetes', 'K3s', 'OpenStack', 'Docker', 'Harbor', 'MetalLB', 'NFS']
+  - group: 'Messaging · Data'
+    items: ['Kafka', 'MQTT · Mosquitto', 'TimescaleDB', 'PostgreSQL · PostGIS', 'Valkey · Redis', 'Airflow']
+  - group: 'Observability'
+    items: ['Prometheus', 'Grafana', 'Alertmanager', 'CloudWatch exporter', 'blackbox exporter', 'kafka-exporter']
+  - group: 'Backend'
+    items: ['Kotlin', 'Spring Boot', 'Python', 'FastAPI', 'TypeScript', 'Next.js']
+about:
+  body: ''
+contacts:
+  github: 'https://github.com/ION127'
+  email: ''
+  resume: ''

@@ -1,0 +1,15 @@
+order: 2
+title: 'StockPulse — 주식 이상 탐지 · AI 분석 파이프라인'
+period: '2026.03'
+team: '개인 프로젝트'
+role: '설계부터 운영까지'
+summary: '한 · 미 108종목 1분봉을 Kafka 파이프라인으로 흘려 급등락을 잡고, 원인을 LLM으로 분석해 대시보드와 Slack까지. 온프레미스 쿠버네티스에 ArgoCD GitOps로 배포 · 운영.'
+description: '주식 이상 탐지 파이프라인 StockPulse의 Kafka 스트리밍 아키텍처와 온프레미스 쿠버네티스 GitOps 운영 기록.'
+metaChips: ['Kafka · MSA', 'Kubernetes · ArgoCD', 'TimescaleDB']
+tags: ['Kafka', 'Kubernetes', 'ArgoCD', 'Sealed Secrets', 'TimescaleDB', 'Prometheus', 'FastAPI', 'Next.js']
+links:
+  - label: 'GitHub · StockPulse'
+    href: 'https://github.com/ION127/StockPulse'
+diagram: stockpulse
+miniScene: stockpulse-anomaly
+pipelineScene: stockpulse-gitops

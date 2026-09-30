@@ -34,8 +34,12 @@ done
 2. **변수 파일.** `infra/bootstrap/terraform.tfvars`를 만든다. `*.tfvars`는 커밋되지 않는다.
    ```hcl
    budget_email = "알림 받을 메일 주소"
-   # 저장소 이름이 ION127/portfolio-site가 아니면:
-   # github_repo = "ION127/다른-이름"
+   # ION127/portfolio-site가 아닌 저장소에 쓰면 그 저장소의 OIDC sub 앞부분으로 바꾼다:
+   # github_subject_prefix = "repo:<소유자>@<소유자 ID>/<이름>@<저장소 ID>"
+   ```
+   sub 앞부분은 저장소 설정에 따라 형식이 다르다. 새 저장소는 이름 뒤에 숫자 ID가 붙는 변경 불가 형식을 쓴다. GitHub가 알려 주는 값을 그대로 쓴다. 워크플로가 역할을 받지 못하면(`Not authorized to perform sts:AssumeRoleWithWebIdentity`) 먼저 이 값을 대조한다.
+   ```bash
+   gh api repos/<소유자>/<이름>/actions/oidc/customization/sub --jq .sub_claim_prefix
    ```
 3. **로컬 상태로 첫 적용.** 상태 버킷이 아직 없으니 잠시 local 백엔드로 덮어쓴다(`*_override.tf`도 커밋되지 않는다).
    ```bash

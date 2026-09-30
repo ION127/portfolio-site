@@ -86,13 +86,14 @@ run "github_oidc" {
     error_message = "역할 이름은 portfolio-gha-plan, portfolio-gha-deploy여야 한다"
   }
 
+  # 저장소가 GitHub의 변경 불가 sub를 쓴다(소유자·저장소 이름 뒤에 숫자 ID).
   assert {
-    condition     = jsondecode(aws_iam_role.github["plan"].assume_role_policy).Statement[0].Condition.StringEquals["token.actions.githubusercontent.com:sub"] == "repo:ION127/portfolio-site:pull_request"
+    condition     = jsondecode(aws_iam_role.github["plan"].assume_role_policy).Statement[0].Condition.StringEquals["token.actions.githubusercontent.com:sub"] == "repo:ION127@125182378/portfolio-site@1396946780:pull_request"
     error_message = "plan 역할은 이 저장소의 PR에서만 쓸 수 있어야 한다"
   }
 
   assert {
-    condition     = jsondecode(aws_iam_role.github["deploy"].assume_role_policy).Statement[0].Condition.StringEquals["token.actions.githubusercontent.com:sub"] == "repo:ION127/portfolio-site:ref:refs/heads/main"
+    condition     = jsondecode(aws_iam_role.github["deploy"].assume_role_policy).Statement[0].Condition.StringEquals["token.actions.githubusercontent.com:sub"] == "repo:ION127@125182378/portfolio-site@1396946780:ref:refs/heads/main"
     error_message = "배포 역할은 이 저장소의 main 브랜치에서만 쓸 수 있어야 한다"
   }
 
@@ -214,4 +215,15 @@ run "rejects_a_bad_email" {
   }
 
   expect_failures = [var.budget_email]
+}
+
+# sub 전체를 붙여 넣으면 역할 이름 뒤에 :pull_request가 두 번 붙어 아무도 역할을 받지 못한다.
+run "rejects_a_full_subject_as_prefix" {
+  command = plan
+
+  variables {
+    github_subject_prefix = "repo:ION127@125182378/portfolio-site@1396946780:pull_request"
+  }
+
+  expect_failures = [var.github_subject_prefix]
 }

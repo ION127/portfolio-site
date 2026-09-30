@@ -10,10 +10,15 @@ variable "project" {
   default     = "portfolio"
 }
 
-variable "github_repo" {
-  description = "배포를 허용할 GitHub 저장소(소유자/이름)"
+variable "github_subject_prefix" {
+  description = "역할을 넘겨줄 GitHub 저장소의 OIDC 토큰 sub 앞부분. 저장소 설정에 따라 형식이 달라서 GitHub가 알려 주는 값을 그대로 쓴다: gh api repos/<소유자>/<이름>/actions/oidc/customization/sub --jq .sub_claim_prefix"
   type        = string
-  default     = "ION127/portfolio-site"
+  default     = "repo:ION127@125182378/portfolio-site@1396946780"
+
+  validation {
+    condition     = can(regex("^repo:[^:]+$", var.github_subject_prefix))
+    error_message = "github_subject_prefix는 repo:로 시작하는 sub 앞부분이어야 한다(:pull_request 같은 뒷부분은 빼고)."
+  }
 }
 
 variable "budget_email" {

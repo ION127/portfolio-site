@@ -7,9 +7,10 @@ locals {
   oidc_host    = "token.actions.githubusercontent.com"
 
   # 역할별로 토큰의 sub가 이 값일 때만 역할을 넘겨준다.
+  # 이 저장소는 변경 불가 sub(이름 뒤에 숫자 ID)를 써서, 같은 이름으로 다시 만든 저장소는 역할을 받을 수 없다.
   github_subjects = {
-    plan   = "repo:${var.github_repo}:pull_request"
-    deploy = "repo:${var.github_repo}:ref:refs/heads/main"
+    plan   = "${var.github_subject_prefix}:pull_request"
+    deploy = "${var.github_subject_prefix}:ref:refs/heads/main"
   }
 }
 

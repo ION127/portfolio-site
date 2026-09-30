@@ -43,3 +43,15 @@ test.describe('BARO case study (ko)', () => {
     expect(res?.status()).toBe(200);
   });
 });
+
+test.describe('StockPulse case study (ko)', () => {
+  test('lists its incidents, decisions and prose', async ({ page }) => {
+    await page.goto('/projects/stockpulse/');
+    await expect(page.locator('h1')).toContainText('StockPulse');
+    await expect(page.locator('#ops .incident')).toHaveCount(4);
+    await expect(page.locator('#ops .incident').first().locator('h3')).toHaveText('ArgoCD가 영원히 OutOfSync');
+    await expect(page.locator('#decisions .decision')).toHaveCount(6);
+    await expect(page.locator('#overview')).toContainText('미국 68종목과 한국 40종목');
+    await expect(page.locator('#infra')).toContainText('Sealed Secrets');
+  });
+});

@@ -2,6 +2,7 @@
 
 인프라/클라우드 직무용 포트폴리오. Astro 7 + React islands, 정적 출력.
 
+- 사이트: https://jjcloud.dev
 - 사실 원장(숫자·주장의 출처): `docs/facts.md`
 
 ## 명령

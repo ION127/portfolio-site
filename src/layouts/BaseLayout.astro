@@ -3,6 +3,8 @@ import '../styles/global.css';
 // Pretendard는 서브셋 선언이 92개(약 30KB)라 첫 화면을 막지 않도록 비동기로 적용한다(head의 link 참고).
 import pretendardHref from 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css?url';
 import '@fontsource/jetbrains-mono/latin-400.css';
+// 404 코드와 다이어그램 VPN 라벨이 굵은 모노를 쓴다. 파일은 그 글자가 화면에 있을 때만 받는다.
+import '@fontsource/jetbrains-mono/latin-700.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { switchLocalePath, type Locale } from '../i18n';

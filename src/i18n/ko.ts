@@ -10,7 +10,6 @@ export const ko = {
   'theme.toDark': '다크 모드로 전환',
   'theme.toLight': '라이트 모드로 전환',
   'lang.switchTo': 'English',
-  'footer.builtWith': 'Astro로 만들었어요',
   'hero.ctaProjects': '프로젝트 보기',
   'hero.ctaGithub': 'GitHub',
   'hero.ctaEmail': '이메일',

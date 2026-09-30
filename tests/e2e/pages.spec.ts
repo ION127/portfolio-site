@@ -12,3 +12,12 @@ for (const path of PAGES) {
     expect(errors).toEqual([]);
   });
 }
+
+for (const path of ['/', '/en/']) {
+  test(`${path} footer shows the copyright without a tool credit`, async ({ page }) => {
+    await page.goto(path);
+    const footer = page.getByRole('contentinfo');
+    await expect(footer).toContainText('© 2026');
+    await expect(footer).not.toContainText(/astro/i);
+  });
+}

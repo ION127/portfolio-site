@@ -12,7 +12,6 @@ export const en: Record<keyof typeof ko, string> = {
   'theme.toDark': 'Switch to dark mode',
   'theme.toLight': 'Switch to light mode',
   'lang.switchTo': '한국어',
-  'footer.builtWith': 'Built with Astro',
   'hero.ctaProjects': 'See projects',
   'hero.ctaGithub': 'GitHub',
   'hero.ctaEmail': 'Email',

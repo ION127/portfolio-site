@@ -1,5 +1,5 @@
 ---
-import { t, type Locale } from '../i18n';
+import type { Locale } from '../i18n';
 import { SITE } from '../lib/site';
 
 interface Props {
@@ -11,7 +11,6 @@ const { locale, wide = false } = Astro.props;
 <footer class="site-footer">
   <div class:list={['container', 'row', { wide }]}>
     <span>© 2026 {SITE.author[locale]}</span>
-    <span>{t(locale, 'footer.builtWith')}</span>
   </div>
 </footer>
 

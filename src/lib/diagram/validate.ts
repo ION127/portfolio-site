@@ -1,7 +1,9 @@
-import { NODE_H, NODE_W, type DiagramSpec } from './types';
-import { parsePath, parseRef } from './routes';
+import { NODE_H, NODE_W, type DiagramSpec, type Rect } from './types';
+import { buildRoute, parsePath, parseRef, type Pt } from './routes';
 
 const LOCALES = ['ko', 'en'] as const;
+/** 이음매 허용 오차. 좌표를 손으로 적으므로 2 단위까지 어긋나도 같은 자리로 본다. */
+const JOIN_TOLERANCE = 2;
 
 /** 다이어그램 데이터의 일관성 오류 목록. 비어 있으면 정상이다. */
 export function validateSpec(spec: DiagramSpec): string[] {
@@ -49,6 +51,21 @@ export function validateSpec(spec: DiagramSpec): string[] {
   spec.chapters.forEach((c, i) => {
     for (const loc of LOCALES) if (!c[loc]) errors.push(`chapter ${i} missing ${loc}`);
   });
+  // 경로의 이음매: 앞 edge의 끝점과 다음 edge의 시작점이 같거나, 둘 다 같은 노드·터널 위에 있어야 한다(그 도형을 지나감).
+  // 그렇지 않으면 흐르는 점이 순간이동한다.
+  const shapes: Rect[] = [
+    ...spec.nodes.map((n) => ({ x: n.x, y: n.y, w: n.w ?? NODE_W, h: n.h ?? NODE_H })),
+    ...spec.tunnels.map((t) => ({ x: t.x, y: t.y, w: t.w, h: t.h })),
+  ];
+  const onShape = (p: Pt, r: Rect) =>
+    p.x >= r.x - JOIN_TOLERANCE &&
+    p.x <= r.x + r.w + JOIN_TOLERANCE &&
+    p.y >= r.y - JOIN_TOLERANCE &&
+    p.y <= r.y + r.h + JOIN_TOLERANCE;
+  const joins = (a: Pt, b: Pt) =>
+    Math.hypot(a.x - b.x, a.y - b.y) <= JOIN_TOLERANCE || shapes.some((r) => onShape(a, r) && onShape(b, r));
+  const edgesById = new Map(spec.edges.map((e) => [e.id, e]));
+
   if (spec.steps.length === 0) errors.push('spec has no steps');
   spec.steps.forEach((s, i) => {
     if (!Number.isInteger(s.chapter) || s.chapter < 0 || s.chapter >= spec.chapters.length) {
@@ -61,6 +78,18 @@ export function validateSpec(spec: DiagramSpec): string[] {
       for (const ref of route) {
         const { id } = parseRef(ref);
         if (!edgeIds.has(id)) errors.push(`step ${i} references unknown edge ${id}`);
+      }
+      let segments: { pts: Pt[] }[];
+      try {
+        segments = buildRoute(route, edgesById).segments;
+      } catch {
+        return; // 빈 경로·없는 edge·읽을 수 없는 경로는 위에서 이미 보고했다.
+      }
+      for (let k = 1; k < segments.length; k += 1) {
+        const prev = segments[k - 1].pts;
+        if (!joins(prev[prev.length - 1], segments[k].pts[0])) {
+          errors.push(`step ${i} route ${r} breaks between ${route[k - 1]} and ${route[k]}`);
+        }
       }
     });
   });

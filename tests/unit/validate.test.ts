@@ -58,4 +58,15 @@ describe('validateSpec', () => {
       expect.arrayContaining(['duplicate node id: a', 'step 1 route 0 is empty', 'step 1 has invalid chapter 3']),
     );
   });
+
+  it('accepts a route that passes through a node and reports one that jumps between edges', () => {
+    const s = fixture();
+    s.edges.push({ id: 'bx', d: 'M380,43 L395,43' });
+    // b의 왼쪽(250,43)으로 들어가 오른쪽(380,43)으로 나간다: 노드를 지나가는 정상 경로
+    s.steps[0].routes.push(['ab', 'bx']);
+    expect(validateSpec(s)).toEqual([]);
+    // b에 도착한 뒤 a의 오른쪽(140,43)에서 다시 출발한다: 점이 순간이동한다
+    s.steps[0].routes.push(['ab', 'ab']);
+    expect(validateSpec(s)).toEqual(['step 0 route 3 breaks between ab and ab']);
+  });
 });

@@ -2,6 +2,7 @@ import { both, type DiagramSpec } from '../lib/diagram/types';
 
 // 좌표·경로는 확정 프로토타입에서 옮겼다.
 // 4번 단계에는 user 노드와 -E4를 더해 모든 연결선이 한 번 이상 쓰이게 했다.
+// 13번 단계의 Kafka → Prometheus 경로는 프로토타입의 '-E20a'(방향이 반대라 점이 순간이동)를 'E20a'로 바로잡았다.
 export const baro: DiagramSpec = {
   id: 'baro',
   width: 1100,
@@ -290,7 +291,7 @@ export const baro: DiagramSpec = {
       facts: ['weights 0–1'],
     },
     {
-      chapter: 5, nodes: ['ialb', 'kafka', 'vpn', 'prom', 'slack'], routes: [['-E22b', '-t3', '-E24'], ['-E20a', '-t4', '-E24'], ['E25']],
+      chapter: 5, nodes: ['ialb', 'kafka', 'vpn', 'prom', 'slack'], routes: [['-E22b', '-t3', '-E24'], ['E20a', '-t4', '-E24'], ['E25']],
       text: {
         ko: '온프레미스 Prometheus가 VPN 너머 서비스 · Kafka · EC2 지표를 모으고, 알림은 AWS · 온프레미스 · 서비스 3개 Slack 채널로 나눠 보내요.',
         en: 'On-prem Prometheus scrapes service, Kafka and EC2 metrics across the VPN, and alerts go to three Slack channels: AWS, on-prem and services.',

@@ -28,15 +28,28 @@ interface Workflow {
 
 const read = (name: string) => load(readFileSync(`.github/workflows/${name}`, 'utf8')) as Workflow;
 const ci = read('ci.yml');
+const plan = read('plan.yml');
 const deploy = read('deploy.yml');
 const script = (job: Job) => (job.steps ?? []).map((s) => s.run ?? '').join('\n');
 const roleOf = (job: Job) =>
   job.steps?.find((s) => s.uses?.startsWith('aws-actions/configure-aws-credentials@'))?.with?.['role-to-assume'];
+// 재사용되는 워크플로의 작업은 호출한 쪽이 준 권한보다 넓게 요청할 수 없다(요청하면 실행 전에 거부된다).
+const rank: Record<string, number> = { none: 0, read: 1, write: 2 };
+const within = (granted: Record<string, string>, requested: Record<string, string>) =>
+  Object.entries(requested).every(([scope, level]) => rank[granted[scope] ?? 'none'] >= rank[level]);
 
 describe('ci workflow', () => {
   it('runs on pull requests to main and can be reused by deploy', () => {
     expect(ci.on).toEqual({ pull_request: { branches: ['main'] }, workflow_call: null });
     expect(ci.permissions).toEqual({ contents: 'read' });
+  });
+
+  it('asks for no more than deploy grants when deploy reuses it', () => {
+    const granted = deploy.jobs.checks.permissions ?? deploy.permissions;
+    const tooWide = Object.entries(ci.jobs)
+      .filter(([, job]) => !within(granted, job.permissions ?? ci.permissions))
+      .map(([name]) => name);
+    expect(tooWide).toEqual([]);
   });
 
   it('runs every site check', () => {
@@ -53,14 +66,24 @@ describe('ci workflow', () => {
     expect(ci.jobs.static.steps?.some((s) => s.uses?.startsWith('docker://rhysd/actionlint:'))).toBe(true);
   });
 
+});
+
+describe('plan workflow', () => {
+  it('runs only on pull requests to main', () => {
+    expect(plan.on).toEqual({ pull_request: { branches: ['main'] } });
+    expect(plan.permissions).toEqual({ contents: 'read' });
+  });
+
   it('plans only for pull requests from this repository, with the read-only role and no lock', () => {
-    const job = ci.jobs['terraform-plan'];
-    expect(job.if).toBe(
-      "github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository",
-    );
+    const job = plan.jobs['terraform-plan'];
+    expect(job.if).toBe('github.event.pull_request.head.repo.full_name == github.repository');
     expect(job.permissions).toEqual({ contents: 'read', 'id-token': 'write' });
     expect(roleOf(job)).toBe('${{ vars.AWS_PLAN_ROLE_ARN }}');
     expect(script(job)).toContain('terraform plan -input=false -lock=false');
+  });
+
+  it('pins the same terraform version as ci', () => {
+    expect(plan.env?.TF_VERSION).toBe(ci.env?.TF_VERSION);
   });
 });
 
@@ -120,7 +143,7 @@ describe('deploy workflow', () => {
   });
 
   it('turns the custom domain on only through the SITE_DOMAIN repository variable', () => {
-    expect(ci.jobs['terraform-plan'].env?.TF_VAR_domain_name).toBe('${{ vars.SITE_DOMAIN }}');
+    expect(plan.jobs['terraform-plan'].env?.TF_VAR_domain_name).toBe('${{ vars.SITE_DOMAIN }}');
     expect(deploy.jobs.apply.env?.TF_VAR_domain_name).toBe('${{ vars.SITE_DOMAIN }}');
   });
 });

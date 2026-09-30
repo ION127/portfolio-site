@@ -10,6 +10,19 @@ test('home: the language toggle goes to the other language and back', async ({ p
   await expect(page.locator('html')).toHaveAttribute('lang', 'ko');
 });
 
+test('switching language keeps the section picked from the table of contents', async ({ page }) => {
+  await page.goto('/projects/baro/');
+  await page.locator('.toc a[data-toc="infra"]').click();
+  await page.getByRole('link', { name: 'English' }).click();
+  await expect(page).toHaveURL('/en/projects/baro/#infra');
+});
+
+test('switching language from the top of a page adds no section', async ({ page }) => {
+  await page.goto('/projects/baro/');
+  await page.getByRole('link', { name: 'English' }).click();
+  await expect(page).toHaveURL('/en/projects/baro/');
+});
+
 test('the skip link targets the main content', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('a.skip')).toHaveAttribute('href', '#main');

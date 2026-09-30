@@ -40,6 +40,7 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
   const innerRef = useRef<HTMLDivElement>(null);
   const packetsRef = useRef<SVGGElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const barRef = useRef<HTMLElement>(null);
   const viewRef = useRef<ViewBox>(fullView(spec.width, spec.height));
   const layoutRef = useRef(layout);
   layoutRef.current = layout;
@@ -49,6 +50,11 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
   const onEdges = useMemo(() => new Set(step.routes.flat().map((r) => parseRef(r).id)), [step]);
   const onNodes = useMemo(() => new Set(step.nodes), [step]);
   const T = (text: I18n) => text[locale];
+
+  // CSP가 HTML의 style 속성을 막으므로 진행 막대 너비는 하이드레이션 뒤 스크립트로 정한다.
+  useEffect(() => {
+    if (barRef.current) barRef.current.style.width = `${((active + 1) / spec.steps.length) * 100}%`;
+  }, [active, spec.steps.length]);
 
   // 배치(좌우/상하)와 모션 줄이기 설정을 읽고 바뀌면 따라간다.
   useEffect(() => {
@@ -247,7 +253,7 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
             </span>
           </div>
           <div className="sbar" aria-hidden="true">
-            <i style={{ width: `${((active + 1) / spec.steps.length) * 100}%` }} />
+            <i ref={barRef} />
           </div>
           <svg
             ref={svgRef}

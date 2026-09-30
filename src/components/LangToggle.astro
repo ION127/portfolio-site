@@ -16,6 +16,17 @@ const href = switchLocalePath(Astro.url.pathname, other);
   </a>
 </div>
 
+<script>
+  // 목차나 #링크로 온 섹션(#해시)을 다른 언어 페이지에도 넘긴다. 섹션 id는 두 언어가 같다.
+  document.querySelectorAll<HTMLAnchorElement>('.lang a.other').forEach((link) => {
+    const keepHash = () => {
+      link.hash = window.location.hash;
+    };
+    link.addEventListener('click', keepHash);
+    link.addEventListener('auxclick', keepHash);
+  });
+</script>
+
 <style>
   .lang {
     display: flex;

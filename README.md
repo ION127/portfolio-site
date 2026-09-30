@@ -19,7 +19,7 @@
 | `npm run test:visual` | 화면 확인용 스크린샷 → `test-results/visual/` |
 | `npm run lighthouse` | Lighthouse 점수 검사 (성능 90+, 접근성·권장사항·SEO 95+) |
 | `npm run og` | OG 이미지 다시 만들기 (`public/og-*.png`) |
-| `node scripts/smoke.mjs <url>` | 배포된 사이트 스모크 확인(홈·영어 상세·301·404·robots) |
+| `node scripts/smoke.mjs <url>` | 배포된 사이트 스모크 확인(홈·영어 상세·301·404·robots, 도메인이면 www) |
 
 ## 배포
 

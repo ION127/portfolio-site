@@ -49,13 +49,18 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
           terraform_wrapper: false
       - run: terraform init -input=false -backend-config="bucket=$TF_STATE_BUCKET"
-      - run: terraform apply -input=false -auto-approve
+      # 다른 실행이 남긴 잠금이 곧 풀릴 수 있어 바로 실패하지 않고 조금 기다린다.
+      - run: terraform apply -input=false -auto-approve -lock-timeout=5m
+      # 값마다 한 줄씩 받아야 terraform output이 실패했을 때 단계가 멈춘다(echo 안에서 받으면 빈 값이 넘어간다).
       - id: out
         run: |
+          site_bucket=$(terraform output -raw site_bucket)
+          distribution_id=$(terraform output -raw distribution_id)
+          site_url=$(terraform output -raw site_url)
           {
-            echo "site_bucket=$(terraform output -raw site_bucket)"
-            echo "distribution_id=$(terraform output -raw distribution_id)"
-            echo "site_url=$(terraform output -raw site_url)"
+            echo "site_bucket=$site_bucket"
+            echo "distribution_id=$distribution_id"
+            echo "site_url=$site_url"
           } >> "$GITHUB_OUTPUT"
 
   publish:

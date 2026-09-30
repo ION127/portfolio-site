@@ -16,6 +16,21 @@ export default defineConfig({
     locales: ['ko', 'en'],
     defaultLocale: 'ko',
   },
+  // 페이지마다 CSP <meta>를 넣는다. script-src·style-src는 Astro가 'self'와 인라인 코드의 해시로 채운다.
+  // meta라서 frame-ancestors는 안 되고, 그 역할은 CloudFront 보안 헤더의 X-Frame-Options가 맡는다.
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        "img-src 'self'",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ],
+    },
+  },
   integrations: [
     react(),
     mdx(),

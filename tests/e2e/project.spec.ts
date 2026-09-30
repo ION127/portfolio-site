@@ -31,6 +31,20 @@ test.describe('BARO case study (ko)', () => {
     await expect(page.locator('.toc a[data-toc="decisions"]')).toHaveAttribute('aria-current', 'location');
   });
 
+  test('the table of contents marks the last section at the bottom of the page', async ({ page }) => {
+    for (const height of [900, 1400]) {
+      await page.setViewportSize({ width: 1440, height });
+      for (const path of ['/projects/baro/', '/projects/stockpulse/']) {
+        await page.goto(path);
+        await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+        await expect(page.locator('.toc a[data-toc="retrospective"]'), `${path} at ${height}px`).toHaveAttribute(
+          'aria-current',
+          'location',
+        );
+      }
+    }
+  });
+
   test('has no horizontal overflow on a 390px phone', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/projects/baro/');

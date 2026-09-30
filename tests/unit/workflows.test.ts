@@ -142,6 +142,17 @@ describe('deploy workflow', () => {
     expect(deploy.env?.TF_VERSION).toBe(ci.env?.TF_VERSION);
   });
 
+  it('stops if terraform cannot report an output instead of passing an empty value on', () => {
+    const lines = script(deploy.jobs.apply).split('\n').map((l) => l.trim());
+    for (const name of ['site_bucket', 'distribution_id', 'site_url']) {
+      expect(lines).toContain(`${name}=$(terraform output -raw ${name})`);
+    }
+  });
+
+  it('waits a while for a lock left by another run instead of failing at once', () => {
+    expect(script(deploy.jobs.apply)).toMatch(/terraform apply .*-lock-timeout=\d+m/);
+  });
+
   it('turns the custom domain on only through the SITE_DOMAIN repository variable', () => {
     expect(plan.jobs['terraform-plan'].env?.TF_VAR_domain_name).toBe('${{ vars.SITE_DOMAIN }}');
     expect(deploy.jobs.apply.env?.TF_VAR_domain_name).toBe('${{ vars.SITE_DOMAIN }}');

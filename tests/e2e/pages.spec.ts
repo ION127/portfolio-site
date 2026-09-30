@@ -13,6 +13,19 @@ for (const path of PAGES) {
   });
 }
 
+test('bold monospace text uses the real JetBrains Mono bold instead of a synthesized one', async ({ page }) => {
+  await page.goto('/404.html');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        [...document.fonts].some(
+          (f) => f.family.replace(/"/g, '') === 'JetBrains Mono' && f.weight === '700' && f.status === 'loaded',
+        ),
+      ),
+    )
+    .toBe(true);
+});
+
 for (const path of ['/', '/en/']) {
   test(`${path} footer shows the copyright without a tool credit`, async ({ page }) => {
     await page.goto(path);

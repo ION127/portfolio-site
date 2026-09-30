@@ -1,5 +1,5 @@
 // 배포 뒤 확인. 사용법: node scripts/smoke.mjs <site_url>
-// 사이트 주소로 핵심 동작 다섯 가지를 확인하고, 하나라도 어긋나면 종료 코드 1로 끝난다.
+// 사이트 주소로 핵심 동작(도메인이면 www까지)을 확인하고, 하나라도 어긋나면 종료 코드 1로 끝난다.
 import { pathToFileURL } from 'node:url';
 
 /**
@@ -34,6 +34,18 @@ export async function smoke(siteUrl, fetchImpl = fetch) {
   const robots = await get('/robots.txt');
   if (robots.status !== 200 || !(await robots.text()).includes(`Sitemap: ${base}/sitemap-index.xml`)) {
     failures.push(`/robots.txt does not point to ${base}/sitemap-index.xml`);
+  }
+
+  // 도메인이 있으면 www도 인증서·별칭·DNS가 붙어 기본 도메인으로 301해야 한다.
+  const { hostname, origin } = new URL(base);
+  if (!hostname.endsWith('.cloudfront.net')) {
+    const wwwUrl = `${origin.replace('://', '://www.')}/`;
+    const expected = `${origin}/`;
+    const www = await fetchImpl(wwwUrl, { redirect: 'manual' });
+    const to = www.headers.get('location') ?? '';
+    if (www.status !== 301 || to !== expected) {
+      failures.push(`${wwwUrl} returned ${www.status}${to ? ` to ${to}` : ''}, expected 301 to ${expected}`);
+    }
   }
   return failures;
 }

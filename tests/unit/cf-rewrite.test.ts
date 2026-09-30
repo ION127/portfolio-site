@@ -17,8 +17,8 @@ type Handler = (event: { request: CfRequest }) => CfRequest | CfRedirect;
 
 // CloudFront Function은 모듈이 아니라 전역 handler 하나로 된 스크립트라 vm으로 읽는다.
 const handler = runInNewContext(`${readFileSync('infra/site/functions/rewrite.js', 'utf8')}\nhandler;`) as Handler;
-const run = (uri: string, host?: string) =>
-  handler({ request: { uri, method: 'GET', querystring: {}, headers: host ? { host: { value: host } } : {} } });
+const run = (uri: string, host?: string, querystring: Record<string, unknown> = {}) =>
+  handler({ request: { uri, method: 'GET', querystring, headers: host ? { host: { value: host } } : {} } });
 
 describe('CloudFront rewrite function', () => {
   it('adds index.html to folder paths', () => {
@@ -43,6 +43,23 @@ describe('CloudFront rewrite function', () => {
       headers: { location: { value: 'https://example.dev/projects/baro/' } },
     });
     expect(run('/', 'www.example.dev')).toMatchObject({ headers: { location: { value: 'https://example.dev/' } } });
+  });
+
+  it('sends www straight to the final address in one hop', () => {
+    expect(run('/projects/baro', 'www.example.dev')).toMatchObject({
+      statusCode: 301,
+      headers: { location: { value: 'https://example.dev/projects/baro/' } },
+    });
+  });
+
+  it('keeps the query string on both redirects', () => {
+    expect(run('/projects/baro', 'www.example.dev', { utm_source: { value: 'x' } })).toMatchObject({
+      headers: { location: { value: 'https://example.dev/projects/baro/?utm_source=x' } },
+    });
+    const qs = { a: { value: '1' }, b: { value: '2', multiValue: [{ value: '2' }, { value: '3' }] } };
+    expect(run('/projects/baro', 'example.dev', qs)).toMatchObject({
+      headers: { location: { value: '/projects/baro/?a=1&b=2&b=3' } },
+    });
   });
 
   it('serves the bare domain and the CloudFront address as usual', () => {

@@ -4,26 +4,43 @@
 function handler(event) {
   const request = event.request;
   const uri = request.uri;
-  // www.<도메인>으로 들어오면 기본 도메인의 같은 주소로 보낸다(canonical과 주소를 하나로 맞춘다).
+  const last = uri.slice(uri.lastIndexOf('/') + 1);
+  // 끝 슬래시가 없는 페이지 주소는 슬래시를 붙인 주소가 정식이다. 파일(점이 있는 이름)은 그대로다.
+  const path = uri.endsWith('/') || last.includes('.') ? uri : uri + '/';
+  // www.<도메인>으로 들어오면 기본 도메인의 정식 주소로 한 번에 보낸다(canonical과 주소를 하나로 맞춘다).
   const host = request.headers.host ? request.headers.host.value : '';
   if (host.startsWith('www.')) {
-    return {
-      statusCode: 301,
-      statusDescription: 'Moved Permanently',
-      headers: { location: { value: 'https://' + host.slice(4) + uri } },
-    };
+    return redirect('https://' + host.slice(4) + path + query(request.querystring));
+  }
+  if (path !== uri) {
+    return redirect(path + query(request.querystring));
   }
   if (uri.endsWith('/')) {
     request.uri = uri + 'index.html';
-    return request;
-  }
-  const last = uri.slice(uri.lastIndexOf('/') + 1);
-  if (!last.includes('.')) {
-    return {
-      statusCode: 301,
-      statusDescription: 'Moved Permanently',
-      headers: { location: { value: uri + '/' } },
-    };
   }
   return request;
+}
+
+// 쿼리 문자열은 받은 모양(인코딩 그대로)으로 다시 붙인다. 같은 키가 여러 번 오면 multiValue에 모두 있다.
+function query(querystring) {
+  const parts = [];
+  for (const key in querystring) {
+    const item = querystring[key];
+    if (item.multiValue) {
+      item.multiValue.forEach(function (v) {
+        parts.push(key + '=' + v.value);
+      });
+    } else {
+      parts.push(key + '=' + item.value);
+    }
+  }
+  return parts.length > 0 ? '?' + parts.join('&') : '';
+}
+
+function redirect(location) {
+  return {
+    statusCode: 301,
+    statusDescription: 'Moved Permanently',
+    headers: { location: { value: location } },
+  };
 }

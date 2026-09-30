@@ -28,6 +28,9 @@ const { locale } = Astro.props;
     const line = window.innerHeight * 0.3;
     let current = sections[0]?.id;
     for (const s of sections) if (s.getBoundingClientRect().top <= line) current = s.id;
+    // 마지막 섹션이 짧으면 기준선에 닿기 전에 페이지가 끝나므로, 끝까지 내렸으면 마지막 섹션을 표시한다.
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+    if (atBottom) current = sections[sections.length - 1]?.id ?? current;
     links.forEach((a, id) => {
       if (id === current) a.setAttribute('aria-current', 'location');
       else a.removeAttribute('aria-current');

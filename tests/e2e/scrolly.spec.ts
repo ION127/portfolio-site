@@ -70,6 +70,22 @@ test.describe('BARO architecture — side by side', () => {
     await expect(page.locator('.sd-tip')).toContainText('EC2 t3.small');
   });
 
+  test('the node spec reaches assistive tech and Escape dismisses the tooltip', async ({ page }) => {
+    await page.goto('/projects/baro/');
+    await waitForScrolly(page);
+    const kafka = page.locator('.arch [data-node="kafka"]');
+    await expect(kafka).toHaveAccessibleDescription(/EC2 t3\.small/);
+    await kafka.focus();
+    await expect(page.locator('.sd-tip')).toContainText('EC2 t3.small');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.sd-tip')).toHaveCount(0);
+    await expect(kafka).toBeFocused();
+    await page.locator('.arch [data-node="rds"]').hover();
+    await expect(page.locator('.sd-tip')).toContainText('PostgreSQL 16');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.sd-tip')).toHaveCount(0);
+  });
+
   test('StockPulse renders its own diagram with the Kafka bus', async ({ page }) => {
     await page.goto('/projects/stockpulse/');
     await waitForScrolly(page);

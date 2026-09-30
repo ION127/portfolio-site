@@ -161,6 +161,17 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
     };
   }, [step, edgesById, layout.reduced, visible]);
 
+  // 툴팁은 Esc로 닫는다(WCAG 1.4.13). 마우스로 띄운 경우엔 포커스가 노드에 없으므로 window에서 듣는다.
+  const tipOpen = tip !== null;
+  useEffect(() => {
+    if (!tipOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setTip(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [tipOpen]);
+
   const placeTip = (title: string, t: Tip, clientX: number, clientY: number) => {
     const box = innerRef.current?.getBoundingClientRect();
     if (!box) return;
@@ -170,10 +181,14 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
     setTip({ title, tip: t, x: Math.max(4, x), y });
   };
 
-  const tipHandlers = (title: string, t: Tip | undefined) =>
+  // 노드 사양은 aria-describedby로 스크린 리더에 전달한다. 설명 요소는 svg 아래의 숨은 목록에 있다.
+  const descId = (id: string) => `${spec.id}-desc-${id}`;
+
+  const tipHandlers = (id: string, title: string, t: Tip | undefined) =>
     t
       ? {
           tabIndex: 0,
+          'aria-describedby': descId(id),
           onMouseEnter: (e: MouseEvent<SVGGElement>) => placeTip(title, t, e.clientX, e.clientY),
           onMouseMove: (e: MouseEvent<SVGGElement>) => placeTip(title, t, e.clientX, e.clientY),
           onMouseLeave: () => setTip(null),
@@ -264,7 +279,7 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
                   className={`node${onNodes.has(tn.id) ? ' on' : ''}`}
                   role="img"
                   aria-label={tn.label}
-                  {...tipHandlers(tn.label, tn.tip)}
+                  {...tipHandlers(tn.id, tn.label, tn.tip)}
                 >
                   <rect x={tn.x} y={tn.y} width={tn.w} height={tn.h} rx={tn.w / 2} className="tunnel" />
                   <text x={cx} y={cy} className="vpn-t" textAnchor="middle" transform={`rotate(90 ${cx} ${cy})`}>
@@ -295,7 +310,7 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
                   transform={`translate(${n.x},${n.y})`}
                   role="img"
                   aria-label={`${name} — ${T(n.sub)}`}
-                  {...tipHandlers(name, n.tip)}
+                  {...tipHandlers(n.id, name, n.tip)}
                 >
                   <rect width={w} height={h} rx={8} className="box" />
                   <text x={11} y={20} className="t">
@@ -309,6 +324,15 @@ export default function ScrollyDiagram({ diagram, locale }: Props) {
             })}
             <g ref={packetsRef} />
           </svg>
+          <div hidden>
+            {[...spec.tunnels, ...spec.nodes].map((shape) =>
+              shape.tip ? (
+                <p key={shape.id} id={descId(shape.id)}>
+                  {shape.tip.kind} — {T(shape.tip.desc)}
+                </p>
+              ) : null,
+            )}
+          </div>
           {tip && (
             <div className="sd-tip" role="tooltip" style={{ left: tip.x, top: tip.y }}>
               <b>{tip.title}</b>

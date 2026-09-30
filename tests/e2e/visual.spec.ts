@@ -20,3 +20,30 @@ for (const [slug, spec] of [
     }
   });
 }
+
+const PAGES = [
+  ['home', '/'],
+  ['home-en', '/en/'],
+  ['baro', '/projects/baro/'],
+  ['stockpulse', '/projects/stockpulse/'],
+] as const;
+const VIEWPORTS = [
+  ['desktop', { width: 1440, height: 900 }],
+  ['mobile', { width: 390, height: 844 }],
+] as const;
+
+for (const theme of ['light', 'dark'] as const) {
+  for (const [vpName, viewport] of VIEWPORTS) {
+    for (const [name, path] of PAGES) {
+      test(`@visual page ${name} ${theme} ${vpName}`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+        await page.goto(path);
+        await page.evaluate(async () => {
+          await document.fonts.ready;
+        });
+        await page.screenshot({ path: `test-results/visual/page-${name}-${theme}-${vpName}.png`, fullPage: true });
+      });
+    }
+  }
+}

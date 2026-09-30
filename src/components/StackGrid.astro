@@ -1,0 +1,48 @@
+---
+interface Props {
+  groups: { group: string; items: string[] }[];
+}
+const { groups } = Astro.props;
+---
+<div class="stack">
+  {groups.map((g) => (
+    <div class="grp">
+      <h3>{g.group}</h3>
+      <ul>{g.items.map((item) => <li>{item}</li>)}</ul>
+    </div>
+  ))}
+</div>
+
+<style>
+  .stack {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px 26px;
+  }
+  h3 {
+    margin: 0 0 7px;
+    font-size: 13.5px;
+    font-weight: 800;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  li {
+    font-size: 11.5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-chip);
+    padding: 1px 7px;
+    color: var(--muted);
+  }
+  @media (max-width: 899px) {
+    .stack {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,96 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import MiniFlow from '../islands/MiniFlow.tsx';
+import { localizePath, t, type Locale } from '../i18n';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  locale: Locale;
+}
+const { project, locale } = Astro.props;
+const p = project.data;
+const slug = project.id.split('/')[1];
+const href = localizePath(`/projects/${slug}/`, locale);
+---
+<article class="card">
+  <div class="thumb">
+    <MiniFlow scenes={[p.miniScene]} locale={locale} mode="static" />
+  </div>
+  <div class="body">
+    <h3><a href={href}>{p.title}</a></h3>
+    <p class="meta">{p.period} · {p.team} · {p.role}</p>
+    <p class="summary">{p.summary}</p>
+    <ul class="tags">{p.tags.map((tag) => <li>{tag}</li>)}</ul>
+    <a class="go" href={href}>{t(locale, 'project.caseStudy')} →</a>
+  </div>
+</article>
+
+<style>
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+  .thumb {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 22px 6px;
+  }
+  .body {
+    padding: 18px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  h3 {
+    margin: 0;
+    font-size: 19px;
+    letter-spacing: -0.4px;
+    font-weight: 800;
+    line-height: 1.4;
+  }
+  h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+  h3 a:hover {
+    color: var(--accent-text);
+  }
+  .meta {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 4px 0 10px;
+  }
+  .summary {
+    font-size: 14px;
+    line-height: 1.8;
+    margin: 0 0 12px;
+  }
+  .tags {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .tags li {
+    font-size: 11.5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-chip);
+    padding: 1px 7px;
+    color: var(--muted);
+  }
+  .go {
+    margin-top: auto;
+    font-size: 13.5px;
+    color: var(--accent-text);
+    font-weight: 800;
+    text-decoration: none;
+  }
+</style>

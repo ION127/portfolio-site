@@ -1,9 +1,4 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { t } from '../i18n';
+import HomePage from '../components/HomePage.astro';
 ---
-<BaseLayout title={t('ko', 'meta.siteTitle')} description={t('ko', 'meta.siteDescription')} locale="ko">
-  <main id="main" class="container">
-    <h1>신중훈</h1>
-  </main>
-</BaseLayout>
+<HomePage locale="ko" />

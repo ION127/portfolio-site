@@ -84,6 +84,15 @@ scripts/tf.sh site init -backend-config="bucket=<상태 버킷>"
 scripts/tf.sh site plan -lock=false
 ```
 
+## 배포가 상태 잠금 때문에 멈추면
+
+배포를 도중에 취소하면 상태 잠금(`site/terraform.tfstate.tflock`)이 남을 수 있다. 다음 배포는 잠금이 풀리기를 5분 기다리다 실패하고, 실패 로그에 잠금 ID가 나온다. 다른 배포가 돌고 있지 않은지 확인한 뒤 푼다.
+
+```bash
+scripts/tf.sh site init -backend-config="bucket=<상태 버킷>"
+scripts/tf.sh site force-unlock <잠금 ID>
+```
+
 ## 도메인 붙이기 (선택)
 
 저장소 변수 `SITE_DOMAIN`이 비어 있으면 CloudFront 기본 주소(`https://<배포>.cloudfront.net`)로 서비스한다. 값을 넣으면 다음 배포에서 `infra/site`가 기본 도메인과 `www`를 담은 인증서(ACM, us-east-1)를 DNS로 검증하고, CloudFront 별칭과 A·AAAA 레코드를 만든다. `www`로 들어오면 주소 변환 함수가 기본 도메인으로 301을 보낸다.

@@ -4,7 +4,9 @@
 .miniflow .mf-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--border); display: block; transition: background var(--dur-highlight); }
 .miniflow .mf-dots i.on { background: var(--accent); }
 .miniflow svg { width: 100%; height: auto; display: block; }
-.miniflow .mf-scene { transition: opacity var(--dur-fade); }
+/* 장면 표시는 style 속성 대신 클래스로 한다(CSP가 HTML의 style 속성을 막는다). */
+.miniflow .mf-scene { opacity: 0; transition: opacity var(--dur-fade); }
+.miniflow .mf-scene.on { opacity: 1; }
 .miniflow .mf-e { stroke: var(--line); stroke-width: 1.5; fill: none; }
 .miniflow .mf-dashed { stroke-dasharray: 4 3; }
 .miniflow .mf-b { fill: var(--surface2); stroke: var(--border); stroke-width: 1.2; }

@@ -31,8 +31,10 @@ describe('MiniFlow server render', () => {
       <MiniFlow scenes={['baro-telemetry', 'stockpulse-anomaly']} locale="ko" mode="auto" caption="캡션" />,
     );
     expect(html).toContain('BARO · 차량 위치 흐름');
-    expect(html).toMatch(/data-scene="0"[^>]*style="opacity:1"/);
-    expect(html).toMatch(/data-scene="1"[^>]*style="opacity:0"/);
+    // 보이는 장면은 클래스 on으로 표시한다(CSP가 HTML의 style 속성을 막아서 속성을 쓰지 않는다).
+    expect(html).toMatch(/data-scene="0" class="mf-scene on"/);
+    expect(html).toMatch(/data-scene="1" class="mf-scene"/);
+    expect(html).not.toContain('style=');
     expect(html).toContain('캡션');
   });
 

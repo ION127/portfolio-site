@@ -17,7 +17,7 @@
 .scrolly .scap .ch em { font-style: normal; color: var(--accent-text); margin-right: 6px; }
 .scrolly .scap .cnt { color: var(--muted); font-family: var(--font-mono); font-size: 11.5px; white-space: nowrap; }
 .scrolly .sbar { height: 3px; background: var(--border); margin: 8px 16px 0; border-radius: 3px; overflow: hidden; }
-.scrolly .sbar i { display: block; height: 100%; background: var(--accent); transition: width 400ms ease; }
+.scrolly .sbar i { display: block; width: 0; height: 100%; background: var(--accent); transition: width 400ms ease; }
 .scrolly .arch { display: block; width: 100%; height: auto; padding: 4px 6px 6px; }
 .scrolly .arch .zone { stroke: var(--border); stroke-width: 1; }
 .scrolly .arch .z-client { fill: var(--zone-client); }

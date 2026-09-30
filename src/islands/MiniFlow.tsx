@@ -104,7 +104,7 @@ export default function MiniFlow({ scenes, locale, mode, caption }: Props) {
         aria-label={specs.map((s) => s.title[locale]).join(' / ')}
       >
         {specs.map((s, si) => (
-          <g key={s.id} data-scene={si} className="mf-scene" style={{ opacity: si === current ? 1 : 0 }}>
+          <g key={s.id} data-scene={si} className={si === current ? 'mf-scene on' : 'mf-scene'}>
             {s.edges.map((d) => (
               <path key={d} d={d} className="mf-e" />
             ))}

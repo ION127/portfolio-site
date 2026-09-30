@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { t } from '../i18n';
+---
+<BaseLayout title="404 · 신중훈" description={t('ko', 'notFound.title')} locale="ko" alternates={false} noindex>
+  <main id="main" class="container nf">
+    <p class="code">404</p>
+    <h1>{t('ko', 'notFound.title')}</h1>
+    <p class="en" lang="en">{t('en', 'notFound.title')}</p>
+    <p class="links">
+      <a href="/">{t('ko', 'notFound.home')}</a>
+      <a href="/en/" lang="en">{t('en', 'notFound.home')}</a>
+    </p>
+  </main>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding-top: 80px;
+    padding-bottom: 120px;
+  }
+  .code {
+    margin: 0;
+    font-family: var(--font-mono);
+    color: var(--accent-text);
+    font-weight: 700;
+  }
+  h1 {
+    margin: 8px 0 4px;
+    font-size: 30px;
+    letter-spacing: -0.8px;
+  }
+  .en {
+    margin: 0 0 24px;
+    color: var(--muted);
+  }
+  .links {
+    display: flex;
+    gap: 16px;
+  }
+  .links a {
+    color: var(--accent-text);
+    font-weight: 700;
+    text-decoration: none;
+  }
+</style>

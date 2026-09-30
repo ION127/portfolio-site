@@ -5,7 +5,7 @@ import pretendardHref from 'pretendard/dist/web/variable/pretendardvariable-dyna
 import '@fontsource/jetbrains-mono/latin-400.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import type { Locale } from '../i18n';
+import { switchLocalePath, type Locale } from '../i18n';
 
 interface Props {
   title: string;
@@ -13,8 +13,24 @@ interface Props {
   locale: Locale;
   wide?: boolean;
   showLangToggle?: boolean;
+  /** 다른 언어판이 있는 페이지면 true */
+  alternates?: boolean;
+  noindex?: boolean;
 }
-const { title, description, locale, wide = false, showLangToggle = true } = Astro.props;
+const {
+  title,
+  description,
+  locale,
+  wide = false,
+  showLangToggle = true,
+  alternates = true,
+  noindex = false,
+} = Astro.props;
+const site = Astro.site ?? new URL('http://localhost:4321');
+const canonical = new URL(Astro.url.pathname, site).href;
+const koUrl = new URL(switchLocalePath(Astro.url.pathname, 'ko'), site).href;
+const enUrl = new URL(switchLocalePath(Astro.url.pathname, 'en'), site).href;
+const ogImage = new URL(`/og-${locale}.png`, site).href;
 ---
 <!doctype html>
 <html lang={locale}>
@@ -23,6 +39,21 @@ const { title, description, locale, wide = false, showLangToggle = true } = Astr
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {alternates && (
+      <>
+        <link rel="alternate" hreflang="ko" href={koUrl} />
+        <link rel="alternate" hreflang="en" href={enUrl} />
+        <link rel="alternate" hreflang="x-default" href={koUrl} />
+      </>
+    )}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={locale === 'ko' ? 'ko_KR' : 'en_US'} />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href={pretendardHref} as="style" />
     <link rel="stylesheet" href={pretendardHref} media="print" onload="this.media='all'" />
@@ -43,7 +74,7 @@ const { title, description, locale, wide = false, showLangToggle = true } = Astr
     </script>
   </head>
   <body>
-    <Nav locale={locale} wide={wide} showLangToggle={showLangToggle} />
+    <Nav locale={locale} wide={wide} showLangToggle={showLangToggle && alternates} />
     <slot />
     <Footer locale={locale} wide={wide} />
   </body>

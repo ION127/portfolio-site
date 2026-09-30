@@ -63,6 +63,8 @@ jobs:
         working-directory: infra/site
     env:
       TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      # 저장소 변수 SITE_DOMAIN이 비어 있으면 CloudFront 기본 주소를 쓴다.
+      TF_VAR_domain_name: ${{ vars.SITE_DOMAIN }}
     steps:
       - uses: actions/checkout@v7
       - uses: aws-actions/configure-aws-credentials@v6

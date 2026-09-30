@@ -23,9 +23,41 @@ mock_provider "aws" {
 
   mock_resource "aws_cloudfront_distribution" {
     defaults = {
-      id          = "E2EXAMPLE"
-      arn         = "arn:aws:cloudfront::123456789012:distribution/E2EXAMPLE"
-      domain_name = "d111111abcdef8.cloudfront.net"
+      id             = "E2EXAMPLE"
+      arn            = "arn:aws:cloudfront::123456789012:distribution/E2EXAMPLE"
+      domain_name    = "d111111abcdef8.cloudfront.net"
+      hosted_zone_id = "Z2FDTNDATAQYW2"
+    }
+  }
+
+  mock_data "aws_route53_zone" {
+    defaults = {
+      zone_id = "Z0EXAMPLE"
+    }
+  }
+}
+
+# CloudFront용 인증서는 us-east-1 provider로 만든다.
+mock_provider "aws" {
+  alias = "us_east_1"
+
+  mock_resource "aws_acm_certificate" {
+    defaults = {
+      arn = "arn:aws:acm:us-east-1:123456789012:certificate/0000-example"
+      domain_validation_options = [
+        {
+          domain_name           = "example.dev"
+          resource_record_name  = "_a.example.dev."
+          resource_record_type  = "CNAME"
+          resource_record_value = "_a.acm-validations.aws."
+        },
+        {
+          domain_name           = "www.example.dev"
+          resource_record_name  = "_b.www.example.dev."
+          resource_record_type  = "CNAME"
+          resource_record_value = "_b.acm-validations.aws."
+        },
+      ]
     }
   }
 }
@@ -138,6 +170,91 @@ run "distribution" {
     condition     = aws_cloudfront_function.rewrite.runtime == "cloudfront-js-2.0" && aws_cloudfront_function.rewrite.publish
     error_message = "주소 변환 함수는 JS 2.0 런타임으로 게시돼야 한다"
   }
+}
+
+run "no_domain_by_default" {
+  command = apply
+
+  assert {
+    condition     = length(aws_cloudfront_distribution.site.aliases) == 0 && aws_cloudfront_distribution.site.viewer_certificate[0].cloudfront_default_certificate
+    error_message = "도메인이 없으면 CloudFront 기본 주소와 기본 인증서를 써야 한다"
+  }
+
+  assert {
+    condition     = length(aws_acm_certificate.site) == 0 && length(aws_route53_record.site) == 0 && length(aws_route53_record.cert_validation) == 0
+    error_message = "도메인이 없으면 인증서와 DNS 레코드를 만들지 않아야 한다"
+  }
+}
+
+run "custom_domain" {
+  command = apply
+
+  variables {
+    domain_name = "example.dev"
+  }
+
+  assert {
+    condition     = toset(aws_cloudfront_distribution.site.aliases) == toset(["example.dev", "www.example.dev"])
+    error_message = "배포 별칭은 기본 도메인과 www여야 한다"
+  }
+
+  assert {
+    condition = (
+      aws_cloudfront_distribution.site.viewer_certificate[0].acm_certificate_arn == "arn:aws:acm:us-east-1:123456789012:certificate/0000-example" &&
+      aws_cloudfront_distribution.site.viewer_certificate[0].ssl_support_method == "sni-only" &&
+      aws_cloudfront_distribution.site.viewer_certificate[0].minimum_protocol_version == "TLSv1.2_2021" &&
+      !aws_cloudfront_distribution.site.viewer_certificate[0].cloudfront_default_certificate
+    )
+    error_message = "도메인이 있으면 검증된 ACM 인증서(SNI, TLS 1.2 이상)를 써야 한다"
+  }
+
+  assert {
+    condition = (
+      aws_acm_certificate.site[0].domain_name == "example.dev" &&
+      toset(aws_acm_certificate.site[0].subject_alternative_names) == toset(["www.example.dev"]) &&
+      aws_acm_certificate.site[0].validation_method == "DNS"
+    )
+    error_message = "인증서는 기본 도메인과 www를 담고 DNS로 검증해야 한다"
+  }
+
+  assert {
+    condition     = length(aws_route53_record.cert_validation) == 2 && alltrue([for r in aws_route53_record.cert_validation : r.zone_id == "Z0EXAMPLE" && r.type == "CNAME"])
+    error_message = "인증서 검증 레코드 두 개를 도메인의 호스팅 영역에 만들어야 한다"
+  }
+
+  assert {
+    condition = (
+      toset(keys(aws_route53_record.site)) == toset(["example.dev A", "example.dev AAAA", "www.example.dev A", "www.example.dev AAAA"]) &&
+      alltrue([for r in aws_route53_record.site : one(r.alias).name == "d111111abcdef8.cloudfront.net" && one(r.alias).zone_id == "Z2FDTNDATAQYW2"])
+    )
+    error_message = "기본 도메인과 www의 A/AAAA 레코드가 CloudFront를 가리켜야 한다"
+  }
+
+  assert {
+    condition     = output.site_url == "https://example.dev"
+    error_message = "도메인이 있으면 site_url은 https://<도메인>이어야 한다"
+  }
+}
+
+# 저장소 변수에 주소를 통째로 넣거나 www를 붙이는 실수는 plan에서 막는다.
+run "rejects_a_url_as_domain" {
+  command = plan
+
+  variables {
+    domain_name = "https://example.dev"
+  }
+
+  expect_failures = [var.domain_name]
+}
+
+run "rejects_www_as_domain" {
+  command = plan
+
+  variables {
+    domain_name = "www.example.dev"
+  }
+
+  expect_failures = [var.domain_name]
 }
 
 run "outputs" {

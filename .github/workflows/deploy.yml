@@ -32,6 +32,8 @@ jobs:
         working-directory: infra/site
     env:
       TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      # 저장소 변수 SITE_DOMAIN이 비어 있으면 CloudFront 기본 주소를 쓴다.
+      TF_VAR_domain_name: ${{ vars.SITE_DOMAIN }}
     outputs:
       site_bucket: ${{ steps.out.outputs.site_bucket }}
       distribution_id: ${{ steps.out.outputs.distribution_id }}

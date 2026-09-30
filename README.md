@@ -26,6 +26,7 @@ AWS S3 + CloudFront 정적 호스팅. 인프라는 Terraform(`infra/`), 배포�
 
 - PR: 사이트 검사(타입·단위·E2E), Terraform 검사(fmt·validate·test), actionlint, `infra/site` plan
 - main에 push: 같은 검사 → `terraform apply` → `SITE_URL`로 빌드 → S3 업로드 → CloudFront 무효화 → 스모크 확인
+- 도메인: 저장소 변수 `SITE_DOMAIN`을 넣으면 인증서와 DNS 레코드를 붙이고 그 주소로 빌드한다. 비어 있으면 CloudFront 기본 주소
 - 처음 설정(bootstrap)과 운영 방법: [`infra/README.md`](infra/README.md)
 
 ## 콘텐츠 고치는 곳

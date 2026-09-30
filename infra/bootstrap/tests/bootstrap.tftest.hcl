@@ -111,7 +111,7 @@ run "least_privilege" {
   assert {
     condition = alltrue(flatten([
       for s in jsondecode(aws_iam_role_policy.plan.policy).Statement : [
-        for a in flatten([s.Action]) : can(regex("^(s3:(Get|List)|cloudfront:(Get|List|Describe))", a))
+        for a in flatten([s.Action]) : can(regex("^(s3:(Get|List)|cloudfront:(Get|List|Describe)|acm:(Get|List|Describe)|route53:(Get|List))", a))
       ]
     ]))
     error_message = "plan 역할에는 읽기 권한(Get·List·Describe)만 있어야 한다"
@@ -129,16 +129,35 @@ run "least_privilege" {
   assert {
     condition = alltrue([
       for s in jsondecode(aws_iam_role_policy.deploy.policy).Statement :
-      alltrue([for a in flatten([s.Action]) : startswith(a, "cloudfront:")])
+      alltrue([for a in flatten([s.Action]) : can(regex("^(cloudfront:|acm:|route53:(Get|List))", a))])
       if contains(flatten([s.Resource]), "*")
     ])
-    error_message = "리소스를 *로 여는 권한은 CloudFront뿐이어야 한다"
+    error_message = "리소스를 *로 여는 권한은 CloudFront·ACM과 Route 53 조회뿐이어야 한다"
+  }
+
+  assert {
+    condition = (
+      contains(flatten([for s in jsondecode(aws_iam_role_policy.deploy.policy).Statement : flatten([s.Action])]), "acm:RequestCertificate") &&
+      anytrue([
+        for s in jsondecode(aws_iam_role_policy.deploy.policy).Statement :
+        contains(flatten([s.Action]), "route53:ChangeResourceRecordSets") && flatten([s.Resource]) == ["arn:aws:route53:::hostedzone/*"]
+      ])
+    )
+    error_message = "배포 역할은 인증서를 요청하고, DNS 레코드는 호스팅 영역 안에서만 바꿀 수 있어야 한다"
+  }
+
+  assert {
+    condition = alltrue([
+      for a in ["acm:DescribeCertificate", "route53:GetHostedZone", "route53:ListHostedZones", "route53:ListResourceRecordSets"] :
+      contains(flatten([for s in jsondecode(aws_iam_role_policy.plan.policy).Statement : flatten([s.Action])]), a)
+    ])
+    error_message = "plan 역할은 인증서와 호스팅 영역·레코드를 조회할 수 있어야 한다"
   }
 
   assert {
     condition = alltrue(flatten([
       for s in jsondecode(aws_iam_role_policy.deploy.policy).Statement : [
-        for r in flatten([s.Resource]) : r == "*" || contains([
+        for r in flatten([s.Resource]) : r == "*" || startswith(r, "arn:aws:route53:::hostedzone/") || contains([
           "arn:aws:s3:::portfolio-tfstate-123456789012",
           "arn:aws:s3:::portfolio-tfstate-123456789012/site/*",
           "arn:aws:s3:::portfolio-site-123456789012",

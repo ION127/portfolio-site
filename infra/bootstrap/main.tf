@@ -129,6 +129,23 @@ resource "aws_iam_role_policy" "plan" {
         Action   = ["cloudfront:Get*", "cloudfront:List*", "cloudfront:DescribeFunction"]
         Resource = "*"
       },
+      {
+        Sid    = "DomainRead"
+        Effect = "Allow"
+        Action = [
+          "acm:DescribeCertificate",
+          "acm:GetCertificate",
+          "acm:ListCertificates",
+          "acm:ListTagsForCertificate",
+          "route53:GetChange",
+          "route53:GetHostedZone",
+          "route53:ListHostedZones",
+          "route53:ListHostedZonesByName",
+          "route53:ListResourceRecordSets",
+          "route53:ListTagsForResource",
+        ]
+        Resource = "*"
+      },
     ]
   })
 }
@@ -171,6 +188,41 @@ resource "aws_iam_role_policy" "deploy" {
           "cloudfront:List*",
           "cloudfront:TagResource",
           "cloudfront:UntagResource",
+        ]
+        Resource = "*"
+      },
+      {
+        # CloudFront용 인증서(us-east-1). 요청 전에는 ARN을 알 수 없다.
+        Sid    = "Certificate"
+        Effect = "Allow"
+        Action = [
+          "acm:AddTagsToCertificate",
+          "acm:DeleteCertificate",
+          "acm:DescribeCertificate",
+          "acm:GetCertificate",
+          "acm:ListCertificates",
+          "acm:ListTagsForCertificate",
+          "acm:RemoveTagsFromCertificate",
+          "acm:RequestCertificate",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid      = "DnsRecordChanges"
+        Effect   = "Allow"
+        Action   = "route53:ChangeResourceRecordSets"
+        Resource = "arn:aws:route53:::hostedzone/*"
+      },
+      {
+        Sid    = "DnsRead"
+        Effect = "Allow"
+        Action = [
+          "route53:GetChange",
+          "route53:GetHostedZone",
+          "route53:ListHostedZones",
+          "route53:ListHostedZonesByName",
+          "route53:ListResourceRecordSets",
+          "route53:ListTagsForResource",
         ]
         Resource = "*"
       },

@@ -17,7 +17,8 @@ type Handler = (event: { request: CfRequest }) => CfRequest | CfRedirect;
 
 // CloudFront Function은 모듈이 아니라 전역 handler 하나로 된 스크립트라 vm으로 읽는다.
 const handler = runInNewContext(`${readFileSync('infra/site/functions/rewrite.js', 'utf8')}\nhandler;`) as Handler;
-const run = (uri: string) => handler({ request: { uri, method: 'GET', querystring: {}, headers: {} } });
+const run = (uri: string, host?: string) =>
+  handler({ request: { uri, method: 'GET', querystring: {}, headers: host ? { host: { value: host } } : {} } });
 
 describe('CloudFront rewrite function', () => {
   it('adds index.html to folder paths', () => {
@@ -33,6 +34,20 @@ describe('CloudFront rewrite function', () => {
       headers: { location: { value: '/projects/baro/' } },
     });
     expect(run('/en')).toMatchObject({ statusCode: 301, headers: { location: { value: '/en/' } } });
+  });
+
+  it('sends www to the bare domain, keeping the path', () => {
+    expect(run('/projects/baro/', 'www.example.dev')).toEqual({
+      statusCode: 301,
+      statusDescription: 'Moved Permanently',
+      headers: { location: { value: 'https://example.dev/projects/baro/' } },
+    });
+    expect(run('/', 'www.example.dev')).toMatchObject({ headers: { location: { value: 'https://example.dev/' } } });
+  });
+
+  it('serves the bare domain and the CloudFront address as usual', () => {
+    expect(run('/projects/baro/', 'example.dev')).toMatchObject({ uri: '/projects/baro/index.html' });
+    expect(run('/', 'd111111abcdef8.cloudfront.net')).toMatchObject({ uri: '/index.html' });
   });
 
   it('leaves file paths alone', () => {

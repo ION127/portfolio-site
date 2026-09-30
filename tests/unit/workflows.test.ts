@@ -118,4 +118,9 @@ describe('deploy workflow', () => {
   it('pins the same terraform version as ci', () => {
     expect(deploy.env?.TF_VERSION).toBe(ci.env?.TF_VERSION);
   });
+
+  it('turns the custom domain on only through the SITE_DOMAIN repository variable', () => {
+    expect(ci.jobs['terraform-plan'].env?.TF_VAR_domain_name).toBe('${{ vars.SITE_DOMAIN }}');
+    expect(deploy.jobs.apply.env?.TF_VAR_domain_name).toBe('${{ vars.SITE_DOMAIN }}');
+  });
 });

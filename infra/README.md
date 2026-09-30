@@ -1,10 +1,9 @@
 # 인프라 (Terraform)
 
-
 | 묶음 | 적용하는 쪽 | 상태 파일 | 만드는 것 |
 |---|---|---|---|
 | `bootstrap/` | 사람(PC). 처음 한 번, 그리고 IAM·예산을 바꿀 때 | `s3://<상태 버킷>/bootstrap/terraform.tfstate` | 상태 버킷, GitHub OIDC 공급자, IAM 역할 2개, 월 예산 알림 |
-| `site/` | GitHub Actions(`deploy.yml`) | `s3://<상태 버킷>/site/terraform.tfstate` | 사이트 버킷, OAC, CloudFront 배포, 주소 변환 함수 |
+| `site/` | GitHub Actions(`deploy.yml`) | `s3://<상태 버킷>/site/terraform.tfstate` | 사이트 버킷, OAC, CloudFront 배포, 주소 변환 함수. 도메인을 쓰면 ACM 인증서와 Route 53 레코드 |
 
 ## 로컬에서는 `scripts/tf.sh`로 실행한다
 
@@ -81,6 +80,23 @@ scripts/tf.sh site init -backend-config="bucket=<상태 버킷>"
 scripts/tf.sh site plan -lock=false
 ```
 
-## 나중에 도메인 붙이기
+## 도메인 붙이기 (선택)
 
-설계서 9절을 따른다. 가비아에서 도메인을 사고, Route 53 호스팅 영역의 네임서버로 바꾼 뒤, `infra/site`에 `domain_name` 변수와 ACM 인증서(us-east-1)·CloudFront aliases·ALIAS 레코드를 더한다.
+저장소 변수 `SITE_DOMAIN`이 비어 있으면 CloudFront 기본 주소(`https://<배포>.cloudfront.net`)로 서비스한다. 값을 넣으면 다음 배포에서 `infra/site`가 기본 도메인과 `www`를 담은 인증서(ACM, us-east-1)를 DNS로 검증하고, CloudFront 별칭과 A·AAAA 레코드를 만든다. `www`로 들어오면 주소 변환 함수가 기본 도메인으로 301을 보낸다.
+
+비용은 도메인 연 요금과 호스팅 영역 월 $0.50이다. 인증서는 무료다.
+
+1. **도메인 등록.** Route 53 콘솔 → 도메인 → 도메인 등록에서 산다. 연락처 개인정보 보호를 켜 두고, 등록자 확인 메일의 링크를 누른다(누르지 않으면 도메인이 정지된다). 등록이 끝나면 같은 이름의 퍼블릭 호스팅 영역이 자동으로 생긴다. 다른 등록기관에서 샀다면 Route 53에 퍼블릭 호스팅 영역을 만들고, 그 NS 레코드의 네임서버 4개를 등록기관에 넣는다.
+2. **호스팅 영역 확인.**
+   ```bash
+   aws route53 list-hosted-zones-by-name --dns-name <도메인> --max-items 1
+   ```
+3. **역할 권한.** 배포 역할에 인증서 요청과 DNS 레코드 변경 권한이 있어야 한다. 이 권한이 들어가기 전에 bootstrap을 적용했다면 위의 "이후 bootstrap을 바꿀 때"로 다시 적용한다.
+4. **저장소 변수를 넣고 다시 배포한다.** 값은 `https://` 없이 도메인만 쓴다.
+   ```bash
+   gh variable set SITE_DOMAIN --body <도메인>
+   gh workflow run deploy.yml
+   ```
+   첫 적용은 인증서 검증과 CloudFront 반영을 기다리느라 수십 분까지 걸린다. 끝나면 `site_url`이 `https://<도메인>`이 되고, 사이트도 그 주소로 빌드된다(canonical·hreflang·사이트맵).
+
+도메인을 떼려면 `SITE_DOMAIN`을 지우고 다시 배포한다. 레코드와 인증서가 지워지고 CloudFront 기본 주소로 돌아간다.

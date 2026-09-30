@@ -4,6 +4,15 @@
 function handler(event) {
   const request = event.request;
   const uri = request.uri;
+  // www.<도메인>으로 들어오면 기본 도메인의 같은 주소로 보낸다(canonical과 주소를 하나로 맞춘다).
+  const host = request.headers.host ? request.headers.host.value : '';
+  if (host.startsWith('www.')) {
+    return {
+      statusCode: 301,
+      statusDescription: 'Moved Permanently',
+      headers: { location: { value: 'https://' + host.slice(4) + uri } },
+    };
+  }
   if (uri.endsWith('/')) {
     request.uri = uri + 'index.html';
     return request;

@@ -9,6 +9,6 @@ output "distribution_id" {
 }
 
 output "site_url" {
-  description = "사이트 주소. 빌드할 때 SITE_URL로 쓴다"
-  value       = "https://${aws_cloudfront_distribution.site.domain_name}"
+  description = "사이트 주소(도메인이 있으면 도메인, 없으면 CloudFront 주소). 빌드할 때 SITE_URL로 쓴다"
+  value       = local.has_domain ? "https://${var.domain_name}" : "https://${aws_cloudfront_distribution.site.domain_name}"
 }

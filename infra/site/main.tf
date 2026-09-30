@@ -89,6 +89,7 @@ resource "aws_cloudfront_distribution" "site" {
   price_class         = "PriceClass_200"
   http_version        = "http2and3"
   is_ipv6_enabled     = true
+  aliases             = local.site_names
 
   origin {
     origin_id                = local.origin_id
@@ -143,8 +144,11 @@ resource "aws_cloudfront_distribution" "site" {
     }
   }
 
-  # 도메인을 붙일 때 ACM 인증서와 aliases로 바꾼다(설계서 9절).
+  # 도메인이 있으면 검증된 ACM 인증서(domain.tf), 없으면 CloudFront 기본 인증서를 쓴다.
   viewer_certificate {
-    cloudfront_default_certificate = true
+    cloudfront_default_certificate = !local.has_domain
+    acm_certificate_arn            = one(aws_acm_certificate_validation.site[*].certificate_arn)
+    ssl_support_method             = local.has_domain ? "sni-only" : null
+    minimum_protocol_version       = local.has_domain ? "TLSv1.2_2021" : "TLSv1"
   }
 }

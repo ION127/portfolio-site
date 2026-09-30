@@ -1,0 +1,18 @@
+---
+---
+### On-prem Kubernetes
+
+- A single `stock` namespace runs 12 Deployments, 3 StatefulSets (Kafka ×3, ZooKeeper, TimescaleDB), 2 DaemonSets, 6 CronJobs and 3 Jobs.
+- Traffic enters through one MetalLB (L2) address and an nginx Ingress: `/api`, `/ws` and `/auth` go to FastAPI, everything else to Next.js. WebSocket timeouts are raised to one hour.
+- Storage combines static NFS PVs (Retain) with nfs-subdir-external-provisioner, and heavy workloads (Kafka, the database, the API, ML) are steered to `node-tier=heavy` nodes.
+- Images live in a private Harbor, and a DaemonSet distributes its self-signed certificate to each node’s containerd.
+
+### From git push to deploy
+
+GitHub Actions on a self-hosted runner maps changed paths to services and builds **only the services that changed**. It pushes `stock/<svc>:<sha7>` to Harbor and commits the new tags to the manifests; ArgoCD checks that commit every 60 seconds and applies it to the cluster. Secrets are stored in Git encrypted with Sealed Secrets.
+
+### Retention and cost
+
+- TimescaleDB hypertables compress chunks older than a day, and drop prices after 30 days and analyses after 90 by whole chunks — far lighter than row-by-row DELETEs.
+- A daily CronJob handles chunk cleanup, VACUUM ANALYZE and a size report; weekly CronJobs watch NFS usage (warning at 80%) and rewrite the Redis AOF.
+- Kafka keeps at most 7 days or 15 GiB.

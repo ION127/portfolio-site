@@ -1,0 +1,15 @@
+order: 2
+title: 'StockPulse — Stock Anomaly Detection & AI Analysis Pipeline'
+period: 'Mar 2026'
+team: 'Solo project'
+role: 'Design to operations'
+summary: 'Streams 1-minute bars for 108 Korean and US tickers through a Kafka pipeline to catch sharp moves, has an LLM explain the cause, and delivers it to a dashboard and Slack. Deployed and run on on-prem Kubernetes with ArgoCD GitOps.'
+description: 'Kafka streaming architecture and on-prem Kubernetes GitOps operations notes from StockPulse, a stock anomaly detection pipeline.'
+metaChips: ['Kafka · MSA', 'Kubernetes · ArgoCD', 'TimescaleDB']
+tags: ['Kafka', 'Kubernetes', 'ArgoCD', 'Sealed Secrets', 'TimescaleDB', 'Prometheus', 'FastAPI', 'Next.js']
+links:
+  - label: 'GitHub · StockPulse'
+    href: 'https://github.com/ION127/StockPulse'
+diagram: stockpulse
+miniScene: stockpulse-anomaly
+pipelineScene: stockpulse-gitops

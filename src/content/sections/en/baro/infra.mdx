@@ -1,0 +1,17 @@
+---
+---
+### AWS, built with Terraform
+
+- A single `envs/dev` environment is managed in Terraform: the VPC (2 AZs, public and private subnets), public and internal ALBs, seven ECS Fargate services, RDS PostgreSQL, ElastiCache (Valkey), EC2 for Kafka and Mosquitto, Cloud Map, Secrets Manager and the site-to-site VPN.
+- State lives in S3 with a DynamoDB lock. GitHub Actions runs `fmt · validate · plan` on pull requests and `apply → db-init → edge deploy (SSM)` on main.
+- To prevent accidents, destroy only runs after typing a confirmation string such as `destroy-dev`.
+
+### Deployment pipeline
+
+The server pipeline detects changed paths, builds and tests only those services, and ships only the ones that pass CI to ECS through ECR. The rider web app deploys with CodeDeploy blue/green and rolls back automatically on failure.
+
+### Keeping costs down
+
+- One switch, `runtime_enabled=false`, tears down NAT, the ALBs, ECS, RDS and EC2 while keeping what is tedious to recreate — the VPC, ECR and secrets.
+- An RDS snapshot is taken automatically before teardown, and the next apply restores the latest one.
+- Kafka’s EC2 went from t3.medium to t3.small, the bastion was removed in favor of SSM-only access, log retention was cut to 7 days, and per-vehicle logs moved to DEBUG to lower CloudWatch costs.

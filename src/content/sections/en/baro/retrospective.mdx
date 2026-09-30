@@ -1,0 +1,6 @@
+---
+---
+Known limitations, and what I would change next time.
+
+- **In-memory state blocks horizontal scaling.** control’s vehicle state, dispatch’s pending-ACK list and SSE connections all live in JVM memory, so adding instances splits the state. Moving them to a shared store such as Redis or pub/sub is the next step.
+- **Single points of failure remain.** Kafka runs on one broker (RF=1), there is one NAT gateway, and RDS is single-AZ. That was a cost-first choice; production would need three brokers, a NAT per AZ and Multi-AZ RDS.

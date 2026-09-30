@@ -1,0 +1,15 @@
+order: 1
+title: 'BARO — Autonomous Taxi Dispatch & Control Platform'
+period: 'Apr – Jun 2026'
+team: 'Team of 5'
+role: 'Backend / DevOps'
+summary: 'Takes positions from 1,500 vehicles over MQTT → Kafka to dispatch and relocate cars, with AWS services and on-prem analytics and observability joined by VPN in a hybrid cloud.'
+description: 'Hybrid-cloud architecture, operations notes and design decisions from BARO, an autonomous taxi dispatch and control platform.'
+metaChips: ['AWS ECS · Terraform', 'MQTT · Kafka', 'OpenStack · K3s']
+tags: ['AWS ECS', 'Terraform', 'MQTT', 'Kafka', 'Valkey', 'OpenStack · K3s', 'Airflow', 'Prometheus']
+links:
+  - label: 'GitHub · baro-team'
+    href: 'https://github.com/orgs/baro-team/repositories'
+diagram: baro
+miniScene: baro-telemetry
+pipelineScene: baro-cicd

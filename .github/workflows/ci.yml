@@ -1,0 +1,51 @@
+# 사이트·Terraform·워크플로 검사. PR에서 돌고, deploy.yml이 배포 전에 같은 검사를 재사용한다(workflow_call).
+# AWS 역할이 필요한 plan은 plan.yml에 둔다. 재사용되는 작업은 호출한 쪽보다 넓은 권한을 요청할 수 없다.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  TF_VERSION: 1.16.4
+
+jobs:
+  web:
+    name: web (check · unit · e2e)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      # SITE_URL 없이 빌드한다. SEO 테스트가 localhost 주소를 기대한다.
+      - run: npm run test:e2e
+
+  static:
+    name: static (terraform · actionlint)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - run: terraform fmt -check -recursive infra
+      - name: terraform validate · test
+        run: |
+          for dir in infra/bootstrap infra/site; do
+            terraform -chdir="$dir" init -backend=false -input=false
+            terraform -chdir="$dir" validate
+            terraform -chdir="$dir" test
+          done
+      - name: actionlint
+        uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color

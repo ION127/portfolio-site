@@ -5,3 +5,12 @@ test-results/
 playwright-report/
 .env*
 lighthouse/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*_override.tf
+crash.log
+tfplan

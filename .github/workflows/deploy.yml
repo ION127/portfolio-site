@@ -1,0 +1,97 @@
+# main에 들어오면 검사 → 인프라 반영 → 빌드·업로드 → 캐시 무효화 → 스모크 확인.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  TF_VERSION: 1.16.4
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  apply:
+    name: terraform apply (infra/site)
+    needs: checks
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: infra/site
+    env:
+      TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+      # 저장소 변수 SITE_DOMAIN이 비어 있으면 CloudFront 기본 주소를 쓴다.
+      TF_VAR_domain_name: ${{ vars.SITE_DOMAIN }}
+    outputs:
+      site_bucket: ${{ steps.out.outputs.site_bucket }}
+      distribution_id: ${{ steps.out.outputs.distribution_id }}
+      site_url: ${{ steps.out.outputs.site_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+      - run: terraform init -input=false -backend-config="bucket=$TF_STATE_BUCKET"
+      - run: terraform apply -input=false -auto-approve
+      - id: out
+        run: |
+          {
+            echo "site_bucket=$(terraform output -raw site_bucket)"
+            echo "distribution_id=$(terraform output -raw distribution_id)"
+            echo "site_url=$(terraform output -raw site_url)"
+          } >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: build · upload · smoke
+    needs: apply
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      BUCKET: ${{ needs.apply.outputs.site_bucket }}
+      DISTRIBUTION_ID: ${{ needs.apply.outputs.distribution_id }}
+      SITE_URL: ${{ needs.apply.outputs.site_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # canonical·hreflang·OG·사이트맵 주소가 SITE_URL로 만들어진다.
+      - run: npm run build
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      # 새 해시 파일 → 페이지(지워진 파일 삭제) → 옛 해시 파일 정리 순서라,
+      # 업로드 도중에도 페이지가 없는 파일을 가리키지 않는다.
+      - name: upload
+        run: |
+          aws s3 sync dist/_astro "s3://$BUCKET/_astro" --cache-control "public,max-age=31536000,immutable"
+          aws s3 sync dist "s3://$BUCKET" --exclude "_astro/*" --cache-control "public,max-age=0,must-revalidate" --delete
+          aws s3 sync dist/_astro "s3://$BUCKET/_astro" --cache-control "public,max-age=31536000,immutable" --delete
+      - name: invalidate
+        run: |
+          id=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' --query Invalidation.Id --output text)
+          aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION_ID" --id "$id"
+      - name: smoke
+        run: node scripts/smoke.mjs "$SITE_URL"

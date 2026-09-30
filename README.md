@@ -2,6 +2,7 @@
 
 인프라/클라우드 직무용 포트폴리오. Astro 7 + React islands, 정적 출력.
 
+- 사이트: https://jjcloud.dev
 - 사실 원장(숫자·주장의 출처): `docs/facts.md`
 
 ## 명령
@@ -18,6 +19,16 @@
 | `npm run test:visual` | 화면 확인용 스크린샷 → `test-results/visual/` |
 | `npm run lighthouse` | Lighthouse 점수 검사 (성능 90+, 접근성·권장사항·SEO 95+) |
 | `npm run og` | OG 이미지 다시 만들기 (`public/og-*.png`) |
+| `node scripts/smoke.mjs <url>` | 배포된 사이트 스모크 확인(홈·영어 상세·301·404·robots) |
+
+## 배포
+
+AWS S3 + CloudFront 정적 호스팅. 인프라는 Terraform(`infra/`), 배포는 GitHub Actions가 한다.
+
+- PR: 사이트 검사(타입·단위·E2E), Terraform 검사(fmt·validate·test), actionlint, `infra/site` plan
+- main에 push: 같은 검사 → `terraform apply` → `SITE_URL`로 빌드 → S3 업로드 → CloudFront 무효화 → 스모크 확인
+- 도메인: 저장소 변수 `SITE_DOMAIN`을 넣으면 인증서와 DNS 레코드를 붙이고 그 주소로 빌드한다. 비어 있으면 CloudFront 기본 주소
+- 처음 설정(bootstrap)과 운영 방법: [`infra/README.md`](infra/README.md)
 
 ## 콘텐츠 고치는 곳
 

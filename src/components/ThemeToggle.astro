@@ -5,26 +5,13 @@ interface Props {
 }
 const { labelToDark, labelToLight } = Astro.props;
 ---
-<button
-  type="button"
-  class="theme-toggle"
-  data-to-dark={labelToDark}
-  data-to-light={labelToLight}
-  aria-label={labelToDark}
->
-  <span class="icon" aria-hidden="true">☾</span>
+<button type="button" class="theme-toggle">
+  <span class="to-dark"><span class="icon" aria-hidden="true">☾</span><span class="sr">{labelToDark}</span></span>
+  <span class="to-light"><span class="icon" aria-hidden="true">☀</span><span class="sr">{labelToLight}</span></span>
 </button>
 
 <script>
-  function sync(button: HTMLButtonElement) {
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const icon = button.querySelector('.icon');
-    if (icon) icon.textContent = dark ? '☀' : '☾';
-    button.setAttribute('aria-label', (dark ? button.dataset.toLight : button.dataset.toDark) ?? '');
-  }
-
   document.querySelectorAll<HTMLButtonElement>('.theme-toggle').forEach((button) => {
-    sync(button);
     button.addEventListener('click', () => {
       const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
@@ -33,7 +20,6 @@ const { labelToDark, labelToLight } = Astro.props;
       } catch {
         // 저장소가 막혀 있어도 이번 페이지에서는 전환이 동작해야 한다.
       }
-      document.querySelectorAll<HTMLButtonElement>('.theme-toggle').forEach(sync);
     });
   });
 </script>
@@ -52,5 +38,18 @@ const { labelToDark, labelToLight } = Astro.props;
   }
   .theme-toggle:hover {
     border-color: var(--accent);
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  /* 머리 스크립트가 첫 화면 전에 data-theme을 정하므로, 아이콘과 이름을 CSS로 고르면 처음부터 맞게 보인다. */
+  :global(:root[data-theme='dark']) .to-dark,
+  :global(:root:not([data-theme='dark'])) .to-light {
+    display: none;
   }
 </style>

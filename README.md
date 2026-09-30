@@ -18,6 +18,15 @@
 | `npm run test:visual` | 화면 확인용 스크린샷 → `test-results/visual/` |
 | `npm run lighthouse` | Lighthouse 점수 검사 (성능 90+, 접근성·권장사항·SEO 95+) |
 | `npm run og` | OG 이미지 다시 만들기 (`public/og-*.png`) |
+| `node scripts/smoke.mjs <url>` | 배포된 사이트 스모크 확인(홈·영어 상세·301·404·robots) |
+
+## 배포
+
+AWS S3 + CloudFront 정적 호스팅. 인프라는 Terraform(`infra/`), 배포는 GitHub Actions가 한다.
+
+- PR: 사이트 검사(타입·단위·E2E), Terraform 검사(fmt·validate·test), actionlint, `infra/site` plan
+- main에 push: 같은 검사 → `terraform apply` → `SITE_URL`로 빌드 → S3 업로드 → CloudFront 무효화 → 스모크 확인
+- 처음 설정(bootstrap)과 운영 방법: [`infra/README.md`](infra/README.md)
 
 ## 콘텐츠 고치는 곳
 

@@ -35,7 +35,7 @@ test('a case study toggles to the same project in the other language', async ({ 
   await expect(page.locator('#architecture')).toContainText('ETFs act as sector thermometers');
   await page.getByRole('link', { name: '한국어' }).click();
   await expect(page).toHaveURL('/projects/stockpulse/');
-  await expect(page.locator('#architecture')).toContainText('ETF를 섹터 체온계로 써요');
+  await expect(page.locator('#architecture')).toContainText('ETF를 섹터 체온계로 씁니다');
 });
 
 test('the English home shows English content and English links', async ({ page }) => {

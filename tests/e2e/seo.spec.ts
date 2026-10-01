@@ -19,7 +19,7 @@ test('English case studies point to English assets and back to Korean', async ({
 test('unknown pages answer 404 in both languages and stay out of the index', async ({ page }) => {
   const res = await page.goto('/does-not-exist/');
   expect(res?.status()).toBe(404);
-  await expect(page.locator('h1')).toHaveText('페이지를 찾을 수 없어요');
+  await expect(page.locator('h1')).toHaveText('페이지를 찾을 수 없습니다');
   await expect(page.locator('main')).toContainText('Page not found');
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
   await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);

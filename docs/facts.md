@@ -21,8 +21,6 @@
 | baro.airflow | 매일 02:00 KST `baro_pipeline`, XGBoost | airflow-dags-repo `dags/baro_pipeline.py` | 초안 |
 | baro.iot-core-switch | IoT Core → EC2 Mosquitto 전환 (2026-06-16) | baro-terraform PR #44 | 초안 |
 | baro.kafka-ec2 | Kafka ECS+EFS → EC2+EBS 이전 (2026-06-04) | baro-terraform `ec2-kafka.tf` | 초안 |
-| stockpulse.period | 2026.03 (저장소 커밋 2026-03-16 ~ 03-27) | GitHub API `created_at` / `pushed_at` | 초안 |
-| stockpulse.my-commits | 내 커밋 119개(2026-03-16 ~ 03-27, 병합 커밋과 github-actions 자동 커밋 제외) | GitHub API `repos/ION127/StockPulse/commits` | 초안 |
 | stockpulse.tickers | 추적 종목 108개 (미국 68 + 한국 40) | StockPulse `core/stock_categories.py` | 초안 |
 | stockpulse.workloads | K8s 워크로드 26개 (Deployment 12, StatefulSet 3, DaemonSet 2, CronJob 6, Job 3) | StockPulse `k8s/` | 초안 |
 | stockpulse.services | 서비스 8개 + ml-trainer CronJob | StockPulse `services/` | 초안 |

@@ -1,0 +1,21 @@
+---
+---
+StockPulse is a personal project, so I did all of it: planning, development, infrastructure and operations. I made 119 commits over 12 days, from March 16 to 27, 2026, roughly in this order.
+
+### Days 1–3: standing up the pipeline on the cluster
+
+- On an on-premises Kubernetes cluster I set up ArgoCD (GitOps) and CI on a self-hosted runner, then deployed the FastAPI backend, the frontend and the Kafka pipeline.
+- I encrypted secrets with Sealed Secrets so they could live in Git, and configured NFS volumes, MetalLB and Ingress (WebSocket), and Harbor certificate distribution.
+- Kafka, Zookeeper and TimescaleDB kept falling over on resources and probes; memory limits, TCP probes and turning off service links fixed them one by one ([incident](#incident-stockpulse-kafka-memory), [incident](#incident-stockpulse-service-links)).
+
+### Days 4–6: features and observability
+
+- I built Korean 1-minute bars (KIS) and daily bars, login, a watchlist and portfolio P&L updated in real time, and a responsive layout.
+- I added the LLM analysis report pipeline with a retry when an analysis fails. Detection runs only during market hours, and requests drop on weekends and holidays.
+- Prometheus and Grafana (Helm), kube-state-metrics and node-exporter made the cluster and anomaly-detector metrics visible.
+
+### Days 7–12: stabilizing and predicting
+
+- I fixed ArgoCD reporting OutOfSync forever because of StatefulSet volumeClaimTemplates ([incident](#incident-stockpulse-argocd-outofsync)).
+- I switched the LLM from Gemini to Groq (llama-3.3-70b) for its larger free token allowance.
+- I trained a price prediction model with sector ETF features, relative strength and purged walk-forward cross-validation, showed it on the dashboard, and marked anomalies on the chart with what happened after detection (trend held or faded).

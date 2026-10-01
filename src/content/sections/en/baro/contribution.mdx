@@ -1,0 +1,32 @@
+---
+---
+I took part in BARO across the board, from planning to deployment and operations, working through it in conversation with the team. What follows is the part I committed myself: between late April and late June 2026 I merged 128 pull requests across six repositories.
+
+### Getting vehicle positions to the screen and to dispatch
+
+- I reshaped the control service, which receives vehicle positions, into a single MQTT → Kafka path. I removed its early Redis and PostGIS dependencies and added an endpoint that keeps vehicle state in memory and pushes it to the operations screen over SSE.
+- I fixed MQTT session and inbound-client issues and a 404 on the ALB path (`/control`), and added trip status and plate numbers to the position messages.
+- I made the Kafka consumers store trip status with the vehicle data, and made each consumer switchable per environment.
+
+### Dispatch and relocation
+
+- Vehicles that have not reported for over 30 seconds drop out of the dispatch candidates (Redis lastSeen), and a vehicle that does not acknowledge a dispatch gets the ride re-dispatched.
+- I built the flow that sends a vehicle back toward high-demand areas after a trip. A relocating vehicle still switches to a new ride when one comes in.
+- I split the admin routes in the gateway and made it check admin rights from the JWT role.
+
+### Operations dashboard
+
+- I built the real-time vehicle dashboard: vehicle positions, trip routes and relocating vehicles (purple markers with their destinations) on a map, behind an admin login with JWT.
+- I also fixed the passenger app map breaking when the viewport changed or the user zoomed.
+
+### Infrastructure and delivery (Terraform)
+
+- In Terraform: the Site-to-Site VPN between the baro-dev VPC and on-premises, moving Kafka from ECS to EC2 with an attached EBS volume (Cloud Map DNS), and replacing AWS IoT Core with Mosquitto on EC2.
+- I built the ECR build and ECS deploy pipeline for the control service, and a step that deploys the vehicle simulator over SSM after `terraform apply`.
+- To cut cost: an automatic RDS snapshot before tearing down and an automatic restore on the next apply, Kafka on t3.small, no bastion (SSM only), and lower CloudWatch log cost. Kafka's EBS volume is protected from accidental deletion.
+
+### Fixes while scaling to 1,500 vehicles
+
+- Removing a per-message DB lookup from the hot path cleared a 2.9M consumer lag ([incident](#incident-baro-consumer-lag)).
+- When Kafka stalled, the producer's wait blocked MQTT intake too; I cut that wait short ([incident](#incident-baro-kafka-block)).
+- Mosquitto's queue overflowed and dropped messages; broker queue settings and staggered simulator connections (0.05 s every 10 vehicles) stopped it ([incident](#incident-baro-mosquitto-queue)).

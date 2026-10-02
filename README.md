@@ -21,6 +21,10 @@
 | `npm run og` | OG 이미지 다시 만들기 (`public/og-*.png`) |
 | `node scripts/smoke.mjs <url>` | 배포된 사이트 스모크 확인(홈·영어 상세·301·404·robots, 도메인이면 www) |
 
+## 데모
+
+BARO 페이지의 "직접 해보기"는 브라우저 시뮬레이션이다(`src/lib/baro-sim/`, 화면은 `src/islands/BaroSim.tsx`). 규칙 상수는 `engine.ts`의 `DEFAULTS`, 출처는 `docs/facts.md`의 `baro.demo-*`에 있다. 지도 타일은 OpenStreetMap(`tile.openstreetmap.org`)에서 받으며, 사이트에서 유일한 외부 요청이다. 데모가 화면에 보일 때만 요청한다.
+
 ## 배포
 
 AWS S3 + CloudFront 정적 호스팅. 인프라는 Terraform(`infra/`), 배포는 GitHub Actions가 한다.

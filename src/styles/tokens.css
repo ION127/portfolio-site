@@ -15,6 +15,8 @@
   --zone-cloud: #fcf4ec;
   --zone-onprem: #eef3ef;
   --shadow: 0 8px 28px rgba(40, 30, 10, 0.07);
+  --sim-trip: #2f6fd0; /* 배차 데모: 운행 중 */
+  --sim-relocate: #7c4dcc; /* 배차 데모: 재배치 중 */
 
   --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
     'Malgun Gothic', system-ui, sans-serif;
@@ -49,6 +51,8 @@
   --zone-cloud: #1e1a15;
   --zone-onprem: #151a16;
   --shadow: none;
+  --sim-trip: #6ea8ff;
+  --sim-relocate: #b08cff;
 }
 
 @media (max-width: 899px) {

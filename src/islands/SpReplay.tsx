@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import './spreplay.css';
 import { t, type Locale, type UiKey } from '../i18n';
 import { RULES, type Classified } from '../lib/sp-replay/detect';
+import { explain } from '../lib/sp-replay/explain';
+import { formatPct, formatSigned } from '../lib/sp-replay/format';
 import { createPlayer, STEP_PHASES, type Phase, type Player } from '../lib/sp-replay/player';
 import { INSTRUMENTS, SECTORS, instrument, newsSearch, sector, type Instrument, type Market } from '../lib/sp-replay/universe';
 
@@ -34,7 +36,6 @@ const NODES: { id: string; key: UiKey; y: number; on: Phase[] }[] = [
   { id: 'out', key: 'replay.node.out', y: 290, on: ['notify'] },
 ];
 
-const fmt = (r: number) => `${r > 0 ? '+' : r < 0 ? '−' : ''}${Math.abs(r).toFixed(1)}%`;
 const level = (r: number) => {
   const a = Math.abs(r);
   const n = a < 0.05 ? 0 : a < 0.15 ? 1 : a < 0.4 ? 2 : 3;
@@ -72,27 +73,31 @@ function story(locale: Locale, p: Player): { title: string; body: ReactNode } {
   if (p.phase === 'detect') {
     const more = p.anomalies.length > 1 ? fill(t(locale, 'replay.detectMore'), { n: p.anomalies.length }) : null;
     return {
-      title: fill(t(locale, 'replay.detect'), { name: nameOf(hi), ret: fmt(h.returnPct), z: h.zscore.toFixed(1) }),
+      title: fill(t(locale, 'replay.detect'), { name: nameOf(hi), ret: formatPct(h.returnPct), z: formatSigned(h.zscore) }),
       body: more && <ul className="sr-body is-text"><li>{more}</li></ul>,
     };
   }
   if (p.phase === 'classify') {
-    const etfs = INSTRUMENTS.filter((i) => i.etf && i.market === h.market && i.sector === h.sector);
-    const movedEtfs = p.anomalies.filter((a) => a.etf && a.sector === h.sector && a.direction === h.direction);
-    const reasons: string[] = [];
-    if (h.eventType === 'MARKET') {
-      const names = h.movingEtfSectors.map((id) => sector(id)?.name[locale] ?? id).join(', ');
-      reasons.push(fill(t(locale, 'replay.reason.market'), { n: h.movingEtfSectors.length, sectors: names }));
-    } else if (h.eventType === 'SECTOR') {
-      if (movedEtfs.length > 0) {
-        reasons.push(fill(t(locale, 'replay.reason.etfMoved'), { etfs: movedEtfs.map((a) => `${nameOf(instrument(a.symbol))} ${fmt(a.returnPct)}`).join(' · ') }));
+    const sectorNames = (ids: readonly string[]) => ids.map((id) => sector(id)?.name[locale] ?? id).join(', ');
+    const label = (symbol: string) => nameOf(instrument(symbol));
+    const reasons = explain(h, p.anomalies).map((r): string => {
+      switch (r.kind) {
+        case 'marketEtfs':
+          return fill(t(locale, 'replay.reason.market'), { n: r.sectors.length, sectors: sectorNames(r.sectors) });
+        case 'marketSectors':
+          return fill(t(locale, 'replay.reason.marketSectors'), { n: r.sectors.length, sectors: sectorNames(r.sectors) });
+        case 'isEtf':
+          return t(locale, 'replay.reason.isEtf');
+        case 'etfMoved':
+          return fill(t(locale, 'replay.reason.etfMoved'), { etfs: r.etfs.map((e) => `${label(e.symbol)} ${formatPct(e.returnPct)}`).join(' · ') });
+        case 'peers':
+          return fill(t(locale, 'replay.reason.peers'), { n: r.count });
+        case 'etfQuiet':
+          return fill(t(locale, 'replay.reason.etfQuiet'), { etfs: r.etfs.map(label).join(' · ') });
+        case 'noPeers':
+          return t(locale, 'replay.reason.noPeers');
       }
-      const stockPeers = h.peers.filter((sym) => !instrument(sym)?.etf);
-      if (stockPeers.length > 0) reasons.push(fill(t(locale, 'replay.reason.peers'), { n: stockPeers.length }));
-    } else {
-      reasons.push(fill(t(locale, 'replay.reason.etfQuiet'), { etfs: etfs.map((i) => nameOf(i)).join(' · ') }));
-      reasons.push(t(locale, 'replay.reason.noPeers'));
-    }
+    });
     return { title: t(locale, TYPE_KEY[h.eventType]), body: <ul className="sr-body">{reasons.map((r) => <li key={r}>{r}</li>)}</ul> };
   }
   if (p.phase === 'news') {
@@ -107,7 +112,7 @@ function story(locale: Locale, p: Player): { title: string; body: ReactNode } {
     title: t(locale, 'replay.notify'),
     body: (
       <div className="sr-slack">
-        <b>[{t(locale, TYPE_KEY[h.eventType])}] {nameOf(hi)} {fmt(h.returnPct)}</b>
+        <b>[{t(locale, TYPE_KEY[h.eventType])}] {nameOf(hi)} {formatPct(h.returnPct)}</b>
         {s.analysis[locale]}
       </div>
     ),
@@ -199,7 +204,7 @@ export default function SpReplay({ locale }: Props) {
     if (phase !== 'board' && h?.symbol === ins.symbol) cls.push('is-headline');
     if (reasons.has(ins.symbol)) cls.push('is-reason');
     return (
-      <span key={ins.symbol} className={cls.join(' ')} title={`${ins.name[locale]} ${fmt(r)}`}>
+      <span key={ins.symbol} className={cls.join(' ')} title={`${ins.name[locale]} ${formatPct(r)}`}>
         {ins.label[locale]}
       </span>
     );

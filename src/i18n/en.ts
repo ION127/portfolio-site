@@ -38,9 +38,6 @@ export const en: Record<keyof typeof ko, string> = {
     'Scroll and the diagram on the right follows the text on the left. Hover over a node to see its specs.',
   'demo.baro':
     'A demo where 1,500 cars move on a map and requests, dispatch, rides and relocation play out on their own',
-  'demo.stockpulse':
-    'A demo where recorded prices flow through the Kafka pipeline and sharp moves are detected and classified',
-  'demo.pending': 'Coming in the next update.',
   'sim.state.idle': 'Idle',
   'sim.state.pickup': 'Picking up',
   'sim.state.trip': 'On trip',
@@ -83,6 +80,8 @@ export const en: Record<keyof typeof ko, string> = {
   'replay.reason.etfQuiet': 'The sector ETFs ({etfs}) did not move with it',
   'replay.reason.noPeers': 'No other stock in the sector moved',
   'replay.reason.etfMoved': 'The sector ETF ({etfs}) moved with it',
+  'replay.reason.marketSectors': 'Stocks in {n} sectors moved the same way: {sectors}',
+  'replay.reason.isEtf': 'The sector ETF itself moved',
   'replay.reason.peers': '{n} other stocks in the sector moved too',
   'replay.reason.market': 'Sector ETFs in {n} sectors moved the same way: {sectors}',
   'replay.news': 'Collected news, searching English sources for {en} and Korean sources for {kr}',

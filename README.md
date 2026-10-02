@@ -25,6 +25,8 @@
 
 BARO 페이지의 "직접 해보기"는 브라우저 시뮬레이션이다(`src/lib/baro-sim/`, 화면은 `src/islands/BaroSim.tsx`). 규칙 상수는 `engine.ts`의 `DEFAULTS`, 출처는 `docs/facts.md`의 `baro.demo-*`에 있다. 지도 타일은 OpenStreetMap(`tile.openstreetmap.org`)에서 받으며, 사이트에서 유일한 외부 요청이다. 데모가 화면에 보일 때만 요청한다.
 
+StockPulse 페이지의 "직접 해보기"는 파이프라인 리플레이다(`src/lib/sp-replay/`, 화면은 `src/islands/SpReplay.tsx`). 종목 구성과 탐지 · 분류 규칙은 실제 코드와 운영 설정 값이고(출처는 `docs/facts.md`의 `stockpulse.sectors` · `detect` · `classify`), 시세 · 뉴스 · 분석 문장은 예시다. 외부 요청은 없다.
+
 ## 배포
 
 AWS S3 + CloudFront 정적 호스팅. 인프라는 Terraform(`infra/`), 배포는 GitHub Actions가 한다.

@@ -61,7 +61,8 @@ test.describe('BARO dispatch demo', () => {
     // 호출 지점으로 카메라가 날아가는 도중에 멈춘다.
     await expect(page.locator('.barosim')).toHaveAttribute('data-phase', 'call', { timeout: 15_000 });
     await page.getByRole('button', { name: '일시정지' }).click();
-    await page.waitForTimeout(400);
+    // 멈춘 직후 한 번 다시 그린 뒤로는 그림이 바뀌지 않아야 한다(줌을 맞추는 애니메이션이 늦게 다시 그리게 하면 안 된다).
+    await page.waitForTimeout(60);
     const [before, count] = [await picture(), await draws()];
     await page.waitForTimeout(1500);
     expect(await picture()).toBe(before);

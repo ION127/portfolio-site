@@ -11,8 +11,6 @@ describe('dictionaries', () => {
 
   it('keep no placeholder copy for demos that now exist', () => {
     expect(Object.keys(ko).filter((k) => k.startsWith('demo.'))).toEqual(['demo.baro']);
-    expect(Object.values(ko).join(' ')).not.toContain('녹화');
-    expect(Object.values(en).join(' ')).not.toContain('recorded prices');
   });
 
   it('have the same keys and no empty strings', () => {

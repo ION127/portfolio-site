@@ -5,13 +5,13 @@ const LOCALES = ['ko', 'en'] as const;
 /** 이음매 허용 오차. 좌표를 손으로 적으므로 2 단위까지 어긋나도 같은 자리로 본다. */
 const JOIN_TOLERANCE = 2;
 
-/** 다이어그램 데이터의 일관성 오류 목록. 비어 있으면 정상이다. */
 /** 다이어그램 데이터가 어긋나면 빌드를 멈춘다. 그대로 두면 브라우저에서 섬이 깨져 다이어그램이 사라진다. */
 export function assertValidSpec(spec: DiagramSpec): void {
   const errors = validateSpec(spec);
   if (errors.length > 0) throw new Error(`${spec.id} diagram is invalid:\n${errors.join('\n')}`);
 }
 
+/** 다이어그램 데이터의 일관성 오류 목록. 비어 있으면 정상이다. */
 export function validateSpec(spec: DiagramSpec): string[] {
   const errors: string[] = [];
   const inside = (x: number, y: number) => x >= 0 && y >= 0 && x <= spec.width && y <= spec.height;

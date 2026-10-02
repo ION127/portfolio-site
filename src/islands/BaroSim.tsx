@@ -115,6 +115,9 @@ export default function BaroSim({ locale, seed }: Props) {
         keyboard: false,
         touchZoom: false,
         zoomSnap: 0.25,
+        // 카메라는 flyTo가 프레임마다 옮긴다. CSS 줌 애니메이션을 끄면 일시정지(map.stop)의 줌 맞춤이 바로 끝나고
+        // move/zoom 이벤트도 바로 나와, 지도와 차량 점이 어긋나는 순간이 없다.
+        zoomAnimation: false,
       });
       map.attributionControl.setPrefix(LEAFLET_ATTRIBUTION);
       // 카메라가 날아가는 동안에는 타일을 받지 않고, 멈춘 뒤 보이는 범위만 한 번 받는다(OSM 타일 정책, 중간 취소 방지).
@@ -123,6 +126,8 @@ export default function BaroSim({ locale, seed }: Props) {
       const seoul = L.latLngBounds([b.south, b.west], [b.north, b.east]);
       map.fitBounds(seoul, { padding: [12, 12], animate: false });
 
+      // 바뀐 것이 있을 때만 다시 그린다(멈춤 · 설명 중에 매 프레임 그리지 않게).
+      let dirty = true;
       // 카메라가 움직이면 차량 화면 좌표가 바뀌니 다시 그린다.
       map.on('move zoom', () => {
         dirty = true;
@@ -131,8 +136,6 @@ export default function BaroSim({ locale, seed }: Props) {
       const pt = (p: LatLng) => map.latLngToContainerPoint([p.lat, p.lng]);
       const projected = new Float32Array(sim.vehicles.length * 2);
 
-      // 바뀐 것이 있을 때만 다시 그린다(멈춤 · 설명 중에 매 프레임 그리지 않게).
-      let dirty = true;
       let dpr = 1;
       let width = 0;
       let height = 0;

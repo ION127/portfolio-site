@@ -7,6 +7,10 @@
 | baro.period | 2026-04-14 ~ 06-29, 5인 팀, 역할 BE/DevOps | baro-team/.github `profile/README.md` | 초안 |
 | baro.vehicles | 동시 시뮬레이션 차량 1,500대 | baro-edge `config.py` (`vehicle_count`) | 초안 |
 | baro.stands | 서울 택시승차대 254곳에서 출발 | baro-edge `config.py` (승차대 좌표) | 초안 |
+| baro.demo-speed | 데모 차량 시속 60km, 직선 이동 | baro-edge `config.py` (`SIM_VEHICLE_SPEED`) | 초안 |
+| baro.demo-radius | 배차 후보: 호출 지점 반경 5km 안 가장 가까운 대기 차량 | baro-server dispatch-service `application.yml` (`idle-car-search-radius-km`), `ConfirmDispatchService.reserveNearestIdleCar` | 초안 |
+| baro.demo-ack | ACK 10초 안에 없으면 다시 배차 | dispatch-service `application.yml` (`ack-timeout-seconds`) | 초안 |
+| baro.demo-relocation | 재배치: 반경 10km(없으면 30km) 승차대 중 0.7 × 정규화 가중치 − 0.3 × 정규화 거리 | relocation-service `RelocationService.assignRelocation` | 초안 |
 | baro.lag | Kafka consumer lag 2.9M → hot path DB 조회 제거로 해소 | baro-server PR #89 | 초안 |
 | baro.lag-rate | 메시지마다 DB 조회, 초당 약 333회 | baro-server PR #89 | 초안 |
 | baro.kafka-block | producer `max.block.ms` 60000 → 500, retries 0 | baro-server PR #103 | 초안 |

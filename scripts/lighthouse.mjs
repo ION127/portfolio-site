@@ -7,6 +7,7 @@ const PORT = 4321;
 const PAGES = [
   ['home', '/'],
   ['baro', '/projects/baro/'],
+  ['stockpulse', '/projects/stockpulse/'],
 ];
 const MIN = { performance: 90, accessibility: 95, 'best-practices': 95, seo: 95 };
 

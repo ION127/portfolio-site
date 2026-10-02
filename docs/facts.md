@@ -26,6 +26,9 @@
 | baro.iot-core-switch | IoT Core → EC2 Mosquitto 전환 (2026-06-16) | baro-terraform PR #44 | 초안 |
 | baro.kafka-ec2 | Kafka ECS+EFS → EC2+EBS 이전 (2026-06-04) | baro-terraform `ec2-kafka.tf` | 초안 |
 | stockpulse.tickers | 추적 종목 108개 (미국 68 + 한국 40) | StockPulse `core/stock_categories.py` | 초안 |
+| stockpulse.sectors | 10개 섹터, 섹터마다 미국 ETF 2 · 종목 5, 한국 ETF 1 · 종목 3(AMZN · TSLA는 두 섹터에 중복) | StockPulse `core/stock_categories.py` | 초안 |
+| stockpulse.detect | 이상값: 1분 등락률 미국 3.0% · 한국 4.0% 이상 또는 Z-score 2.0 이상(최근 20개 봉, 둘 중 하나) | StockPulse `k8s/configmap.yaml`(`ANOMALY_THRESHOLD_PERCENT`, `ANOMALY_ZSCORE_THRESHOLD`), `core/stock_fetcher.detect_anomalies` | 초안 |
+| stockpulse.classify | 분류: 같은 방향 섹터 ETF 3개 섹터 이상 또는 움직인 섹터 3개 이상 → 시장, ETF 자신 · 자기 섹터 ETF · 같은 섹터 종목 1개 이상 → 업종, 나머지 → 개별 | StockPulse `core/stock_fetcher.classify_event_type` | 초안 |
 | stockpulse.workloads | K8s 워크로드 26개 (Deployment 12, StatefulSet 3, DaemonSet 2, CronJob 6, Job 3) | StockPulse `k8s/` | 초안 |
 | stockpulse.services | 서비스 8개 + ml-trainer CronJob | StockPulse `services/` | 초안 |
 | stockpulse.topics | Kafka 토픽 7개(DLQ 2개 포함) | StockPulse `services/*/main.py`, `core/kafka_dlq.py` | 초안 |

@@ -97,14 +97,13 @@ test.describe('BARO dispatch demo', () => {
     await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible();
   });
 
-  test('leaves the StockPulse placeholder alone and loads no map there', async ({ page }) => {
+  test('loads no map on the StockPulse page', async ({ page }) => {
     const mapRequests: string[] = [];
     page.on('request', (r) => {
       if (/leaflet|tile\.openstreetmap/.test(r.url())) mapRequests.push(r.url());
     });
     await page.goto('/projects/stockpulse/');
     await page.locator('#demo').scrollIntoViewIfNeeded();
-    await expect(page.locator('#demo .demo-ph')).toBeVisible();
     await page.waitForTimeout(1000);
     expect(mapRequests).toEqual([]);
   });

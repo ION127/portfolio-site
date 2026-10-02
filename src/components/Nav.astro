@@ -75,9 +75,18 @@ const { locale, wide = false, showLangToggle = true } = Astro.props;
     border-radius: 6px;
     z-index: 100;
   }
+  /* 좁은 화면에서는 메뉴를 숨기지 않고 둘째 줄로 내린다(펼침 버튼 없이 바로 누를 수 있게) */
   @media (max-width: 599px) {
+    .bar {
+      flex-wrap: wrap;
+      row-gap: 0;
+    }
     .links {
-      display: none;
+      order: 3;
+      width: 100%;
+      margin-left: 0;
+      gap: 18px;
+      padding-bottom: 12px;
     }
   }
 </style>

@@ -17,10 +17,7 @@ if (!home) throw new Error(`src/content/home/${locale}.yaml is missing`);
 const h = home.data;
 const inLocale = (id: string) => id.startsWith(`${locale}/`);
 const projects = (await getCollection('projects', (e) => inLocale(e.id))).sort((a, b) => a.data.order - b.data.order);
-// 'BARO — 자율주행 …' → 'BARO'
-const projectTitle: Record<string, string> = Object.fromEntries(
-  projects.map((p) => [p.id.split('/')[1], p.data.title.split(' — ')[0]]),
-);
+const projectTitle: Record<string, string> = Object.fromEntries(projects.map((p) => [p.id.split('/')[1], p.data.shortTitle]));
 const projectOrder = (slug: string) => projects.findIndex((p) => p.id.split('/')[1] === slug);
 const highlights = (await getCollection('incidents', (e) => inLocale(e.id) && e.data.highlight)).sort(
   (a, b) => projectOrder(a.data.project) - projectOrder(b.data.project) || a.data.order - b.data.order,

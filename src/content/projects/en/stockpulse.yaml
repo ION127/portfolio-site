@@ -1,5 +1,6 @@
 order: 2
 title: 'StockPulse — Stock Anomaly Detection & AI Analysis Pipeline'
+shortTitle: 'StockPulse'
 team: 'Solo project'
 role: 'Design to operations'
 summary: 'Streams 1-minute bars for 108 Korean and US tickers through a Kafka pipeline to catch sharp moves, has an LLM explain the cause, and delivers it to a dashboard and Slack. Deployed and run on on-prem Kubernetes with ArgoCD GitOps.'

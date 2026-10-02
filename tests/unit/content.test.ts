@@ -48,6 +48,16 @@ describe('ko/en content parity', () => {
     }
   });
 
+  it('projects have a short name that starts their title', () => {
+    for (const locale of ['ko', 'en']) {
+      for (const f of relFiles('projects', locale)) {
+        const p = yaml(join(ROOT, 'projects', locale, f));
+        expect(typeof p.shortTitle, `${locale}/${f}`).toBe('string');
+        expect(String(p.title).startsWith(String(p.shortTitle)), `${locale}/${f}`).toBe(true);
+      }
+    }
+  });
+
   it('projects keep the same structural fields in both languages', () => {
     for (const f of relFiles('projects', 'ko')) {
       const ko = yaml(join(ROOT, 'projects', 'ko', f));

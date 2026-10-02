@@ -35,7 +35,7 @@ export const en: Record<keyof typeof ko, string> = {
   'section.retrospective': 'Limits & retrospective',
   'section.pending': 'This section is coming soon.',
   'architecture.hint':
-    'Scroll and the diagram on the right follows the text on the left. Hover over a node to see its specs.',
+    'Scroll and the diagram follows the text. Point at or select a node to see its specs.',
   'demo.baro':
     'A demo where 1,500 cars move on a map and requests, dispatch, rides and relocation play out on their own',
   'sim.state.idle': 'Idle',

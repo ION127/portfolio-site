@@ -13,6 +13,15 @@ test.describe('390px phone', () => {
     });
   }
 
+  test('keeps the menu links on a phone', async ({ page }) => {
+    for (const [path, label] of [['/projects/baro/', '주요 메뉴'], ['/en/', 'Main menu']]) {
+      await page.goto(path);
+      const links = page.getByRole('navigation', { name: label }).getByRole('link');
+      await expect(links).toHaveCount(3);
+      for (const link of await links.all()) await expect(link).toBeVisible();
+    }
+  });
+
   test('case studies stack the diagram above the text and hide the table of contents', async ({ page }) => {
     await page.goto('/projects/baro/');
     await expect(page.locator('.toc-col')).toBeHidden();

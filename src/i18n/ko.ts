@@ -33,7 +33,7 @@ export const ko = {
   'section.retrospective': '한계 · 회고',
   'section.pending': '이 섹션은 준비 중입니다.',
   'architecture.hint':
-    '스크롤을 내리면 왼쪽 설명을 따라 오른쪽 다이어그램이 움직입니다. 노드에 마우스를 올리면 사양이 보입니다.',
+    '스크롤을 내리면 설명을 따라 다이어그램이 움직입니다. 노드를 가리키거나 선택하면 사양이 보입니다.',
   'demo.baro': '지도 위 차량 1,500대가 움직이고, 호출 → 배차 → 이동 → 재배치가 저절로 진행되는 데모',
   'sim.state.idle': '대기',
   'sim.state.pickup': '픽업 중',

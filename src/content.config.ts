@@ -2,14 +2,17 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { DIAGRAM_IDS, MINI_SCENE_IDS } from './diagrams/ids';
+import { PROJECT_SLUGS } from './lib/site';
 
-const project = z.enum(['baro', 'stockpulse']);
+const project = z.enum(PROJECT_SLUGS);
 
 const projects = defineCollection({
   loader: glob({ pattern: '**/*.yaml', base: './src/content/projects' }),
   schema: z.object({
     order: z.number(),
     title: z.string(),
+    /** 홈의 지표 · 운영 기록 꼬리표에 쓰는 짧은 이름 */
+    shortTitle: z.string(),
     // 비우면 카드와 상세 페이지에 기간을 표시하지 않는다.
     period: z.string().optional(),
     team: z.string(),

@@ -10,7 +10,8 @@ const projects = defineCollection({
   schema: z.object({
     order: z.number(),
     title: z.string(),
-    period: z.string(),
+    // 비우면 카드와 상세 페이지에 기간을 표시하지 않는다.
+    period: z.string().optional(),
     team: z.string(),
     role: z.string(),
     summary: z.string(),

@@ -23,7 +23,7 @@ export const baro: DiagramSpec = {
       label: 'SITE-TO-SITE VPN · IPSEC',
       tip: {
         kind: 'AWS VGW ↔ StrongSwan (IPsec)',
-        desc: { ko: 'AWS와 온프렘을 사설망으로 연결해요.', en: 'Links AWS and on-prem over a private network.' },
+        desc: { ko: 'AWS와 온프렘을 사설망으로 연결합니다.', en: 'Links AWS and on-prem over a private network.' },
       },
     },
   ],
@@ -32,13 +32,13 @@ export const baro: DiagramSpec = {
       id: 'mobile', x: 25, y: 110, w: 150,
       title: { ko: '승객 모바일 웹', en: 'Rider web app' },
       sub: { ko: 'React · SSE 수신', en: 'React · SSE client' },
-      tip: { kind: 'React 18 · Vite', desc: { ko: '호출 → 배차 → 탑승 → 도착 흐름의 승객 앱이에요.', en: 'The rider app for request → dispatch → ride → arrival.' } },
+      tip: { kind: 'React 18 · Vite', desc: { ko: '호출 → 배차 → 탑승 → 도착 흐름의 승객 앱입니다.', en: 'The rider app for request → dispatch → ride → arrival.' } },
     },
     {
       id: 'admin', x: 25, y: 200, w: 150,
       title: { ko: '관제 화면', en: 'Control console' },
       sub: both('baro-admin · SSE'),
-      tip: { kind: 'baro-admin', desc: { ko: '전 차량 위치를 SSE로 실시간 표시해요.', en: 'Shows every vehicle live over SSE.' } },
+      tip: { kind: 'baro-admin', desc: { ko: '전 차량 위치를 SSE로 실시간 표시합니다.', en: 'Shows every vehicle live over SSE.' } },
     },
     {
       id: 'vehicle', x: 25, y: 470, w: 150,
@@ -46,26 +46,26 @@ export const baro: DiagramSpec = {
       sub: { ko: 'asyncio 시뮬레이터', en: 'asyncio simulator' },
       tip: {
         kind: 'Python 3.11 · asyncio · aiomqtt',
-        desc: { ko: '서울 택시승차대 254곳에서 출발하는 차량 1500대를 동시에 띄워요.', en: 'Runs 1,500 vehicles at once, starting from 254 Seoul taxi stands.' },
+        desc: { ko: '서울 택시승차대 254곳에서 출발하는 차량 1500대를 동시에 띄웁니다.', en: 'Runs 1,500 vehicles at once, starting from 254 Seoul taxi stands.' },
       },
     },
     {
       id: 'kakao', x: 380, y: 12, external: true,
       title: both('Kakao Mobility'),
       sub: { ko: '외부 경로·요금 API', en: 'Route & fare API' },
-      tip: { kind: 'External API', desc: { ko: '경로 · 요금 · 소요시간을 계산해요.', en: 'Computes routes, fares and ETAs.' } },
+      tip: { kind: 'External API', desc: { ko: '경로 · 요금 · 소요시간을 계산합니다.', en: 'Computes routes, fares and ETAs.' } },
     },
     {
       id: 'slack', x: 915, y: 12, w: 160, external: true,
       title: both('Slack'),
       sub: { ko: '알림 3채널 분리', en: '3 alert channels' },
-      tip: { kind: 'Alertmanager → Slack', desc: { ko: 'AWS · 온프렘 · 서비스 채널로 나눠 받아요.', en: 'Separate AWS, on-prem and service channels.' } },
+      tip: { kind: 'Alertmanager → Slack', desc: { ko: 'AWS · 온프렘 · 서비스 채널로 나눠 받습니다.', en: 'Separate AWS, on-prem and service channels.' } },
     },
     {
       id: 'alb', x: 225, y: 110,
       title: both('Public ALB'),
       sub: { ko: 'HTTPS · 경로 라우팅', en: 'HTTPS · path routing' },
-      tip: { kind: 'HTTPS · TLS 1.3 · ACM', desc: { ko: '경로 기반 라우팅, */internal/* 는 403이에요.', en: 'Path-based routing; */internal/* returns 403.' } },
+      tip: { kind: 'HTTPS · TLS 1.3 · ACM', desc: { ko: '경로 기반 라우팅, */internal/* 는 403입니다.', en: 'Path-based routing; */internal/* returns 403.' } },
     },
     {
       id: 'gateway', x: 225, y: 200,
@@ -119,37 +119,37 @@ export const baro: DiagramSpec = {
       id: 'relocation', x: 690, y: 200,
       title: both('relocation'),
       sub: { ko: '승차대 점수 · 재배치', en: 'Stand scoring' },
-      tip: { kind: 'Kotlin · Spring Boot 3 · PostGIS', desc: { ko: '운행을 마친 차량을 수요 높은 승차대로 보내요.', en: 'Sends cars that finish a ride to high-demand stands.' } },
+      tip: { kind: 'Kotlin · Spring Boot 3 · PostGIS', desc: { ko: '운행을 마친 차량을 수요 높은 승차대로 보냅니다.', en: 'Sends cars that finish a ride to high-demand stands.' } },
     },
     {
       id: 'ialb', x: 690, y: 320,
       title: both('Internal ALB'),
       sub: { ko: '/internal · 메트릭', en: '/internal · metrics' },
-      tip: { kind: 'on-prem CIDR only', desc: { ko: '배치 연동과 메트릭 수집 창구예요.', en: 'Entry point for batch jobs and metrics scraping.' } },
+      tip: { kind: 'on-prem CIDR only', desc: { ko: '배치 연동과 메트릭 수집 창구입니다.', en: 'Entry point for batch jobs and metrics scraping.' } },
     },
     {
       id: 'prom', x: 915, y: 110, w: 160,
       title: both('Prometheus'),
       sub: { ko: 'Grafana · 알림 룰', en: 'Grafana · alert rules' },
-      tip: { kind: 'kube-prometheus-stack', desc: { ko: 'AWS와 온프렘을 한곳에서 관측해요.', en: 'Observes AWS and on-prem in one place.' } },
+      tip: { kind: 'kube-prometheus-stack', desc: { ko: 'AWS와 온프렘을 한곳에서 관측합니다.', en: 'Observes AWS and on-prem in one place.' } },
     },
     {
       id: 'airflow', x: 915, y: 230, w: 160,
       title: both('Airflow'),
       sub: { ko: '매일 02:00 수요 학습', en: 'Daily 02:00 demand model' },
-      tip: { kind: 'Airflow 3.2 · GitSync', desc: { ko: '매일 02:00 수요를 학습해 승차대 가중치를 만들어요.', en: 'Learns demand every day at 02:00 and produces stand weights.' } },
+      tip: { kind: 'Airflow 3.2 · GitSync', desc: { ko: '매일 02:00 수요를 학습해 승차대 가중치를 만듭니다.', en: 'Learns demand every day at 02:00 and produces stand weights.' } },
     },
     {
       id: 'tsdb', x: 915, y: 350, w: 160,
       title: both('TimescaleDB'),
       sub: { ko: '시계열 hypertable', en: 'Time-series hypertable' },
-      tip: { kind: 'TimescaleDB · K3s', desc: { ko: '차량 위치 · 배차 이력 시계열을 저장해요.', en: 'Stores vehicle positions and dispatch history.' } },
+      tip: { kind: 'TimescaleDB · K3s', desc: { ko: '차량 위치 · 배차 이력 시계열을 저장합니다.', en: 'Stores vehicle positions and dispatch history.' } },
     },
     {
       id: 'consumer', x: 915, y: 470, w: 160,
       title: both('kafka-consumer'),
       sub: { ko: 'VPN 너머 소비 · 적재', en: 'Consumes across VPN' },
-      tip: { kind: 'Kotlin · Spring Boot · K3s', desc: { ko: 'VPN 너머 Kafka를 소비해 TimescaleDB에 적재해요.', en: 'Consumes Kafka across the VPN into TimescaleDB.' } },
+      tip: { kind: 'Kotlin · Spring Boot · K3s', desc: { ko: 'VPN 너머 Kafka를 소비해 TimescaleDB에 적재합니다.', en: 'Consumes Kafka across the VPN into TimescaleDB.' } },
     },
   ],
   edges: [
@@ -197,7 +197,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 0, nodes: [], routes: [],
       text: {
-        ko: 'BARO는 <b>승객 앱 · 차량</b>, 서비스가 도는 <b>AWS</b>, 분석 · 관측을 맡은 <b>온프레미스(OpenStack K3s)</b>로 나뉘어요. AWS와 온프레미스는 Site-to-Site VPN으로 이어져 있어요.',
+        ko: 'BARO는 <b>승객 앱 · 차량</b>, 서비스가 도는 <b>AWS</b>, 분석 · 관측을 맡은 <b>온프레미스(OpenStack K3s)</b>로 나뉩니다. AWS와 온프레미스는 Site-to-Site VPN으로 이어져 있습니다.',
         en: 'BARO splits into <b>rider apps and vehicles</b>, <b>AWS</b> where the services run, and <b>on-prem (OpenStack K3s)</b> for analytics and observability. AWS and on-prem are joined by a site-to-site VPN.',
       },
       facts: ['ECS Fargate ×7', 'EC2: Kafka · Mosquitto', 'IPsec VPN'],
@@ -205,7 +205,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 1, nodes: ['vehicle', 'mosquitto', 'control'], routes: [['E7', 'E8']],
       text: {
-        ko: '차량 1500대가 3초마다 위치를 MQTT(QoS0)로 보내요. control은 <b>공유 구독</b>으로 받아서, 인스턴스를 늘려도 한 메시지는 한 곳에서만 처리돼요.',
+        ko: '차량 1500대가 3초마다 위치를 MQTT(QoS0)로 보냅니다. control은 <b>공유 구독</b>으로 받아서, 인스턴스를 늘려도 한 메시지는 한 곳에서만 처리됩니다.',
         en: '1,500 vehicles publish their position over MQTT (QoS 0) every 3 seconds. control receives them through a <b>shared subscription</b>, so each message goes to only one instance even as it scales out.',
       },
       facts: ['vehicles/{id}/telemetry', '$share/control-service'],
@@ -213,7 +213,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 1, nodes: ['control', 'gateway', 'alb', 'admin', 'kafka'], routes: [['-E6', '-E3', '-E2'], ['E9']],
       text: {
-        ko: '관제 화면에는 SSE로 곧장 뿌리고, 나머지는 Kafka <code>vehicle-data-topic</code>으로 보내요. key=carId라 같은 차량의 위치는 순서가 보장돼요.',
+        ko: '관제 화면에는 SSE로 곧장 뿌리고, 나머지는 Kafka <code>vehicle-data-topic</code>으로 보냅니다. key=carId라 같은 차량의 위치는 순서가 보장됩니다.',
         en: 'The control console gets positions straight over SSE; everything else goes to the Kafka <code>vehicle-data-topic</code>. Keyed by carId, so each vehicle’s positions stay in order.',
       },
       facts: ['4 partitions', 'key = carId'],
@@ -221,7 +221,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 1, nodes: ['kafka', 'dispatch', 'valkey', 'vpn', 'consumer', 'tsdb'], routes: [['E10', 'E12'], ['E20a', 't1', 'E20b', 'E21']],
       text: {
-        ko: 'dispatch는 10초 넘은 메시지를 버리고 빈 차만 Valkey GEO에 올려요. 온프레미스 consumer는 VPN 너머에서 같은 토픽을 받아 TimescaleDB에 쌓아요.',
+        ko: 'dispatch는 10초 넘은 메시지를 버리고 빈 차만 Valkey GEO에 올립니다. 온프레미스 consumer는 VPN 너머에서 같은 토픽을 받아 TimescaleDB에 쌓습니다.',
         en: 'dispatch drops messages older than 10 seconds and keeps only idle cars in the Valkey GEO index. The on-prem consumer reads the same topic across the VPN and stores it in TimescaleDB.',
       },
       facts: ['GEO dispatch:cars:idle:geo', 'hypertable vehicle_data'],
@@ -229,7 +229,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 2, nodes: ['mobile', 'alb', 'gateway', 'user', 'dispatch', 'kakao'], routes: [['E1', 'E3', 'E5', 'E11'], ['-E4']],
       text: {
-        ko: '호출은 ALB → gateway를 지나요. JWT는 user가 발급하고 gateway 한 곳에서만 검증해요. dispatch는 Kakao로 요금 · 경로를 먼저 계산해 보여줘요(PRE배차).',
+        ko: '호출은 ALB → gateway를 지납니다. JWT는 user가 발급하고 gateway 한 곳에서만 검증합니다. dispatch는 Kakao로 요금 · 경로를 먼저 계산해 보여줍니다(PRE배차).',
         en: 'A request passes the ALB and then the gateway. JWTs are issued by user and verified only at the gateway. dispatch first shows a fare and route from Kakao (the pre-dispatch quote).',
       },
       facts: ['X-Authenticated-User-Id', 'quote TTL 10 min'],
@@ -237,7 +237,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 2, nodes: ['dispatch', 'valkey', 'rds'], routes: [['E12'], ['E13']],
       text: {
-        ko: '확정하면 15km 안 후보 10대를 찾고, 300초 넘게 소식 없는 차는 빼고, <b>SETNX 선점 락(30초)</b>으로 두 승객이 같은 차를 잡지 못하게 해요. 배차는 트랜잭션으로 저장해요.',
+        ko: '확정하면 15km 안 후보 10대를 찾고, 300초 넘게 소식 없는 차는 빼고, <b>SETNX 선점 락(30초)</b>으로 두 승객이 같은 차를 잡지 못하게 합니다. 배차는 트랜잭션으로 저장합니다.',
         en: 'On confirmation it finds 10 candidates within 15 km, skips cars silent for over 300 seconds, and takes a <b>SETNX lock (30 s)</b> so two riders can’t grab the same car. The dispatch is saved in a transaction.',
       },
       facts: ['GEOSEARCH 15km', 'SETNX TTL 30s'],
@@ -245,7 +245,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 2, nodes: ['dispatch', 'control', 'mosquitto', 'vehicle'], routes: [['E14', '-E8', '-E7', 'E7', 'E8', '-E14']],
       text: {
-        ko: '명령은 MQTT(QoS1)로 차량에 가고 ACK가 돌아와요. <b>10초 안에 ACK가 없으면</b> 다음 차량으로 자동 재배차해요.',
+        ko: '명령은 MQTT(QoS1)로 차량에 가고 ACK가 돌아옵니다. <b>10초 안에 ACK가 없으면</b> 다음 차량으로 자동 재배차합니다.',
         en: 'The command reaches the car over MQTT (QoS 1) and an ACK comes back. <b>If no ACK arrives within 10 seconds</b>, the next car is dispatched automatically.',
       },
       facts: ['vehicles/{id}/commands', 'ACK timeout 10s'],
@@ -253,7 +253,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 2, nodes: ['dispatch', 'gateway', 'alb', 'mobile'], routes: [['-E5', '-E3', '-E1']],
       text: {
-        ko: '승객 앱엔 SSE로 차량 위치와 도착 상태(픽업 → 목적지)를 실시간으로 밀어줘요.',
+        ko: '승객 앱엔 SSE로 차량 위치와 도착 상태(픽업 → 목적지)를 실시간으로 밀어줍니다.',
         en: 'The rider app gets live vehicle positions and arrival status (pickup → destination) over SSE.',
       },
       facts: ['SSE vehicle-location'],
@@ -261,7 +261,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 3, nodes: ['vehicle', 'mosquitto', 'control', 'relocation'], routes: [['E7', 'E8', 'E19']],
       text: {
-        ko: '목적지 도착 이벤트를 받은 control이 relocation에 비동기로 알려요. 배차 흐름과 엮이지 않도록 분리한 구조예요.',
+        ko: '목적지 도착 이벤트를 받은 control이 relocation에 비동기로 알립니다. 배차 흐름과 엮이지 않도록 분리한 구조입니다.',
         en: 'When a car reports arriving at its destination, control notifies relocation asynchronously, kept separate from the dispatch flow.',
       },
       facts: ['ARRIVED(to_dest)', '202 Accepted'],
@@ -269,7 +269,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 3, nodes: ['relocation', 'rds', 'kakao', 'control', 'mosquitto', 'vehicle'], routes: [['E15'], ['E16'], ['-E19', '-E8', '-E7']],
       text: {
-        ko: 'PostGIS로 주변 승차대에 점수(0.7 · 수요 − 0.3 · 거리)를 매겨 가장 좋은 곳으로 RELOCATE. 이동 중에도 배차 가능한 상태라 호출이 오면 바로 받아요.',
+        ko: 'PostGIS로 주변 승차대에 점수(0.7 · 수요 − 0.3 · 거리)를 매겨 가장 좋은 곳으로 RELOCATE. 이동 중에도 배차 가능한 상태라 호출이 오면 바로 받습니다.',
         en: 'PostGIS scores nearby stands (0.7 · demand − 0.3 · distance) and the car is sent to the best one with RELOCATE. It stays dispatchable while moving, so it can take a new request right away.',
       },
       facts: ['ST_DWithin 10→30km', 'status = relocating'],
@@ -277,7 +277,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 4, nodes: ['dispatch', 'ialb', 'vpn', 'airflow', 'tsdb'], routes: [['-E18', '-E22b', '-t2', '-E22a'], ['E23']],
       text: {
-        ko: '매일 02:00, Airflow가 VPN 너머 internal ALB로 전날 배차 데이터를 가져와 승차대 × 요일 × 시간대 수요를 집계해요.',
+        ko: '매일 02:00, Airflow가 VPN 너머 internal ALB로 전날 배차 데이터를 가져와 승차대 × 요일 × 시간대 수요를 집계합니다.',
         en: 'Every day at 02:00, Airflow pulls the previous day’s dispatch data through the internal ALB across the VPN and aggregates demand by stand × weekday × time slot.',
       },
       facts: ['gzip CSV export', 'X-Internal-Api-Key'],
@@ -285,7 +285,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 4, nodes: ['airflow', 'vpn', 'ialb', 'relocation'], routes: [['E22a', 't2', 'E22b', 'E17']],
       text: {
-        ko: 'XGBoost로 학습한 승차대 가중치를 relocation에 보내면, 다음 재배치부터 바로 반영돼요.',
+        ko: 'XGBoost로 학습한 승차대 가중치를 relocation에 보내면, 다음 재배치부터 바로 반영됩니다.',
         en: 'Stand weights learned with XGBoost are sent to relocation and apply from the next relocation onward.',
       },
       facts: ['weights 0–1'],
@@ -293,7 +293,7 @@ export const baro: DiagramSpec = {
     {
       chapter: 5, nodes: ['ialb', 'kafka', 'vpn', 'prom', 'slack'], routes: [['-E22b', '-t3', '-E24'], ['E20a', '-t4', '-E24'], ['E25']],
       text: {
-        ko: '온프레미스 Prometheus가 VPN 너머 서비스 · Kafka · EC2 지표를 모으고, 알림은 AWS · 온프레미스 · 서비스 3개 Slack 채널로 나눠 보내요.',
+        ko: '온프레미스 Prometheus가 VPN 너머 서비스 · Kafka · EC2 지표를 모으고, 알림은 AWS · 온프레미스 · 서비스 3개 Slack 채널로 나눠 보냅니다.',
         en: 'On-prem Prometheus scrapes service, Kafka and EC2 metrics across the VPN, and alerts go to three Slack channels: AWS, on-prem and services.',
       },
       facts: ['JMX :9404', 'CloudWatch exporter', 'Alertmanager → Slack'],

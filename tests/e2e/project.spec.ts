@@ -2,6 +2,33 @@ import { expect, test } from '@playwright/test';
 import { PROJECT_SECTIONS } from '../../src/lib/site';
 import { collectPageErrors } from './helpers';
 
+test('both case studies show my contribution in both languages', async ({ page }) => {
+  const pages = [
+    ['/projects/baro/', 'PR 128개'],
+    ['/en/projects/baro/', '128 pull requests'],
+    ['/projects/stockpulse/', '혼자 진행한 개인 프로젝트'],
+    ['/en/projects/stockpulse/', 'personal project'],
+  ];
+  for (const [path, text] of pages) {
+    await page.goto(path);
+    await expect(page.locator('#contribution .pending'), path).toHaveCount(0);
+    await expect(page.locator('#contribution'), path).toContainText(text);
+  }
+});
+
+test('the StockPulse pages give no hint of how long the project took', async ({ page }) => {
+  const hint = /2026|\bMar\b|March|일차|일 동안|\d+\s*days\b|\bDays\s*\d|커밋 \d+개|\d+ commits/;
+  for (const path of ['/', '/en/']) {
+    await page.goto(path);
+    await expect(page.locator('#projects .card', { hasText: 'StockPulse' }).locator('.meta'), path).not.toContainText(hint);
+  }
+  for (const path of ['/projects/stockpulse/', '/en/projects/stockpulse/']) {
+    await page.goto(path);
+    await expect(page.locator('.head .chips'), path).not.toContainText(hint);
+    await expect(page.locator('#contribution'), path).not.toContainText(hint);
+  }
+});
+
 test.describe('BARO case study (ko)', () => {
   test('renders the eight sections in order with no errors', async ({ page }) => {
     const errors = collectPageErrors(page);
@@ -21,7 +48,6 @@ test.describe('BARO case study (ko)', () => {
     await expect(page.locator('#decisions .decision')).toHaveCount(6);
     await expect(page.locator('#overview')).toContainText('호출 → 배차 → 이동 → 재배치');
     await expect(page.locator('#infra')).toContainText('runtime_enabled');
-    await expect(page.locator('#contribution .pending')).toBeVisible();
   });
 
   test('the table of contents follows the reading position', async ({ page }) => {

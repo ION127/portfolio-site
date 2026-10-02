@@ -46,7 +46,7 @@ const hasDiagram = DIAGRAMS[p.diagram] !== undefined;
         <a class="back" href={localizePath('/#projects', locale)}>← {t(locale, 'project.back')}</a>
         <h1>{p.title}</h1>
         <ul class="chips">
-          <li>{p.period}</li>
+          {p.period && <li>{p.period}</li>}
           <li>{p.team} · {p.role}</li>
           {p.metaChips.map((chip) => <li>{chip}</li>)}
         </ul>

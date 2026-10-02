@@ -52,14 +52,14 @@ AWS S3 + CloudFront 정적 호스팅. 인프라는 Terraform(`infra/`), 배포�
 
 확인이 끝난 항목은 해당 파일의 `confirmed: true`나 `docs/facts.md`의 `확정`으로 표시한다.
 
-1. StockPulse 기간: 현재 초안 `2026.03`(저장소 커밋 3/16–3/27 기준). 실제로 언제 시작했는지 확인이 필요하다.
+1. StockPulse 기간: 사이트에 표시하지 않는다. 다시 넣으려면 `projects/{ko,en}/stockpulse.yaml`에 `period`를 적는다.
 2. 공개할 이메일 → `home/{ko,en}.yaml`의 `contacts.email`. 비어 있으면 버튼이 숨겨진다.
 3. 이력서 링크 → `contacts.resume`. 선택 사항이다.
 4. 운영 기록 7건의 실제 경위·수치. 특히 StockPulse 4건은 코드 주석에서 추정한 초안이다.
 5. 설계 결정 12건의 배경과 대안
 6. 홈 숫자 4개: `docs/facts.md`의 `확인` 열
 7. 한계·회고 섹션을 공개할지와 그 범위
-8. **내 기여** 본문: `contribution.mdx`를 직접 작성한다.
+8. **내 기여** 본문: PR·커밋 기록으로 쓴 초안(`contribution.mdx`)을 검토한다. 협업으로 기여한 부분은 기록에 없으니 보탠다.
 9. **소개 글**: `home/{ko,en}.yaml`의 `about.body`. 문단은 빈 줄로 구분한다.
 10. 영어 이름 표기: 현재 `Joong Hoon Shin`(git 작성자 이름 기준)
 11. 영어 번역 전체 검토

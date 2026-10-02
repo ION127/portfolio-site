@@ -18,7 +18,7 @@ const href = localizePath(`/projects/${slug}/`, locale);
   </div>
   <div class="body">
     <h3><a href={href}>{p.title}</a></h3>
-    <p class="meta">{p.period} · {p.team} · {p.role}</p>
+    <p class="meta">{[p.period, p.team, p.role].filter(Boolean).join(' · ')}</p>
     <p class="summary">{p.summary}</p>
     <ul class="tags">{p.tags.map((tag) => <li>{tag}</li>)}</ul>
     <a class="go" href={href}>{t(locale, 'project.caseStudy')} →</a>

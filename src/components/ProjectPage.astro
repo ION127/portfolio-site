@@ -11,6 +11,7 @@ import { SITE, type ProjectSlug } from '../lib/site';
 import ScrollyDiagram from '../islands/ScrollyDiagram.tsx';
 import MiniFlow from '../islands/MiniFlow.tsx';
 import BaroSim from '../islands/BaroSim.tsx';
+import SpReplay from '../islands/SpReplay.tsx';
 import { DIAGRAMS } from '../diagrams';
 
 interface Props {
@@ -73,7 +74,13 @@ const hasDiagram = DIAGRAMS[p.diagram] !== undefined;
       </Section>
 
       <Section id="demo" title={t(locale, 'section.demo')}>
-        {slug === 'baro' ? <BaroSim client:visible locale={locale} /> : <DemoPlaceholder locale={locale} project={slug} />}
+        {slug === 'baro' ? (
+          <BaroSim client:visible locale={locale} />
+        ) : slug === 'stockpulse' ? (
+          <SpReplay client:visible locale={locale} />
+        ) : (
+          <DemoPlaceholder locale={locale} project={slug} />
+        )}
       </Section>
 
       <Section id="ops" title={t(locale, 'section.ops')}>

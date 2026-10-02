@@ -38,6 +38,17 @@ describe('BARO diagram data', () => {
     expect(targetView(baro, baro.steps[0], false)).toEqual([0, 0, 1100, 580]);
   });
 
+  it('zooms to the VPN tunnel when a step highlights only the tunnel', () => {
+    expect(baro.steps[3]!.nodes).toContain('vpn');
+    const tunnel = baro.tunnels.find((t) => t.id === 'vpn')!;
+    const [x, y, w, h] = targetView(baro, { ...baro.steps[3]!, nodes: ['vpn'] }, false);
+    expect(w).toBeLessThan(baro.width);
+    expect(x).toBeLessThanOrEqual(tunnel.x);
+    expect(y).toBeLessThanOrEqual(tunnel.y);
+    expect(x + w).toBeGreaterThanOrEqual(tunnel.x + tunnel.w);
+    expect(y + h).toBeGreaterThanOrEqual(tunnel.y + tunnel.h);
+  });
+
   it('zooms the dispatch-lock step to the same box as the approved prototype', () => {
     expect(formatView(targetView(baro, baro.steps[5], false))).toBe('137.50 0.00 770.00 406.00');
   });

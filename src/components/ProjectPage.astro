@@ -5,7 +5,6 @@ import Section from './Section.astro';
 import Toc from './Toc.astro';
 import IncidentCard from './IncidentCard.astro';
 import DecisionCard from './DecisionCard.astro';
-import DemoPlaceholder from './DemoPlaceholder.astro';
 import { localizePath, t, type Locale } from '../i18n';
 import { SITE, type ProjectSlug } from '../lib/site';
 import ScrollyDiagram from '../islands/ScrollyDiagram.tsx';
@@ -13,6 +12,7 @@ import MiniFlow from '../islands/MiniFlow.tsx';
 import BaroSim from '../islands/BaroSim.tsx';
 import SpReplay from '../islands/SpReplay.tsx';
 import { DIAGRAMS } from '../diagrams';
+import { assertValidSpec } from '../lib/diagram/validate';
 
 interface Props {
   locale: Locale;
@@ -37,7 +37,9 @@ const Infra = await prose('infra');
 const Contribution = await prose('contribution');
 const Retrospective = await prose('retrospective');
 const pending = t(locale, 'section.pending');
-const hasDiagram = DIAGRAMS[p.diagram] !== undefined;
+const spec = DIAGRAMS[p.diagram];
+if (spec) assertValidSpec(spec);
+const hasDiagram = spec !== undefined;
 ---
 <BaseLayout title={`${p.title} · ${SITE.author[locale]}`} description={p.description} locale={locale} wide>
   <div class="container wide project">
@@ -74,13 +76,7 @@ const hasDiagram = DIAGRAMS[p.diagram] !== undefined;
       </Section>
 
       <Section id="demo" title={t(locale, 'section.demo')}>
-        {slug === 'baro' ? (
-          <BaroSim client:visible locale={locale} />
-        ) : slug === 'stockpulse' ? (
-          <SpReplay client:visible locale={locale} />
-        ) : (
-          <DemoPlaceholder locale={locale} project={slug} />
-        )}
+        {slug === 'baro' ? <BaroSim client:visible locale={locale} /> : <SpReplay client:visible locale={locale} />}
       </Section>
 
       <Section id="ops" title={t(locale, 'section.ops')}>

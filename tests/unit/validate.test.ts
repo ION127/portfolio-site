@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateSpec } from '../../src/lib/diagram/validate';
+import { assertValidSpec, validateSpec } from '../../src/lib/diagram/validate';
 import { both, type DiagramSpec } from '../../src/lib/diagram/types';
 
 function fixture(): DiagramSpec {
@@ -19,6 +19,15 @@ function fixture(): DiagramSpec {
     steps: [{ chapter: 0, nodes: ['a', 'b', 'vpn'], routes: [['ab'], ['-ab']], text: both('A to B') }],
   };
 }
+
+describe('assertValidSpec', () => {
+  it('stops the build with the problems of a broken diagram', () => {
+    const broken = fixture();
+    broken.steps[0]!.nodes.push('ghost');
+    expect(() => assertValidSpec(broken)).toThrow(/fx diagram[\s\S]*ghost/);
+    expect(() => assertValidSpec(fixture())).not.toThrow();
+  });
+});
 
 describe('validateSpec', () => {
   it('accepts a consistent spec', () => {

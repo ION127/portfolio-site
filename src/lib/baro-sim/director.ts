@@ -25,9 +25,11 @@ export interface DirectorTiming {
   searchS: number;
   reserveS: number;
   relocateS: number;
+  /** 다시 배차할 차가 없어 실패한 호출을 설명하는 시간 */
+  failedS: number;
   failEvery: number;
 }
-export const DEFAULT_TIMING: DirectorTiming = { overviewS: 4, callS: 1.6, searchS: 1.6, reserveS: 1.2, relocateS: 2.2, failEvery: 3 };
+export const DEFAULT_TIMING: DirectorTiming = { overviewS: 4, callS: 1.6, searchS: 1.6, reserveS: 1.2, relocateS: 2.2, failedS: 2.4, failEvery: 3 };
 
 export interface Spotlight {
   callId: number;
@@ -42,6 +44,8 @@ export interface Spotlight {
   /** 지금 예약된 차가 응답하지 않을 차인지. */
   waitingSilent: boolean;
   standIndex: number | null;
+  /** 다시 배차할 빈 차가 없어 호출이 실패했는지. 설명하는 동안 단계는 그대로 둔다. */
+  failed: boolean;
 }
 
 export interface Director {
@@ -59,7 +63,10 @@ export function createDirector(sim: Sim, timing: DirectorTiming = DEFAULT_TIMING
   let spotlight: Spotlight | null = null;
   let count = 0;
 
-  const timeScale = () => (phase === 'ack' && spotlight?.waitingSilent ? ACK_WAIT_SCALE : TIME_SCALE[phase]);
+  const timeScale = () => {
+    if (spotlight?.failed) return 0;
+    return phase === 'ack' && spotlight?.waitingSilent ? ACK_WAIT_SCALE : TIME_SCALE[phase];
+  };
 
   function go(next: Phase) {
     phase = next;
@@ -94,6 +101,7 @@ export function createDirector(sim: Sim, timing: DirectorTiming = DEFAULT_TIMING
       ackFailed: false,
       waitingSilent: false,
       standIndex: null,
+      failed: false,
     };
     go('call');
   }
@@ -116,7 +124,10 @@ export function createDirector(sim: Sim, timing: DirectorTiming = DEFAULT_TIMING
       s.standIndex = e.standIndex;
       go('relocate');
     } else if (e.type === 'failed') {
-      end();
+      s.failed = true;
+      s.waitingSilent = false;
+      s.vehicleId = null;
+      elapsed = 0;
     }
   }
 
@@ -124,7 +135,9 @@ export function createDirector(sim: Sim, timing: DirectorTiming = DEFAULT_TIMING
     elapsed += wallDt;
     const events = sim.step(wallDt * timeScale());
     const s = spotlight;
-    if (phase === 'overview' && elapsed >= timing.overviewS) {
+    if (s?.failed) {
+      if (elapsed >= timing.failedS) end();
+    } else if (phase === 'overview' && elapsed >= timing.overviewS) {
       startSpotlight();
     } else if (phase === 'call' && s && elapsed >= timing.callS) {
       s.candidateIds = sim.candidates(s.origin).map((v) => v.id);
@@ -138,6 +151,9 @@ export function createDirector(sim: Sim, timing: DirectorTiming = DEFAULT_TIMING
       end();
     }
     for (const e of events) onEvent(e);
+    // 재배치 중인 차가 다른 호출에 배차되거나 승차대에 닿으면 따라가기를 끝낸다.
+    const car = phase === 'relocate' && spotlight?.vehicleId != null ? sim.vehicleById(spotlight.vehicleId) : undefined;
+    if (car && car.state !== 'relocating') end();
     return events;
   }
 

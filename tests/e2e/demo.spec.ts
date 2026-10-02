@@ -45,6 +45,30 @@ test.describe('BARO dispatch demo', () => {
     await expect(page.getByRole('button', { name: '일시정지' })).toBeVisible();
   });
 
+  test('freezes the camera and stops drawing while paused', async ({ page }) => {
+    await page.addInitScript(() => {
+      const draws = { n: 0 };
+      Object.defineProperty(window, '__draws', { value: draws });
+      const clear = CanvasRenderingContext2D.prototype.clearRect;
+      CanvasRenderingContext2D.prototype.clearRect = function (this: CanvasRenderingContext2D, ...args: [number, number, number, number]) {
+        if (this.canvas.classList.contains('bs-canvas')) draws.n++;
+        return clear.apply(this, args);
+      };
+    });
+    const draws = () => page.evaluate(() => (window as unknown as { __draws: { n: number } }).__draws.n);
+    const picture = () => page.locator('.bs-canvas').evaluate((c: HTMLCanvasElement) => c.toDataURL());
+    await openDemo(page);
+    // 호출 지점으로 카메라가 날아가는 도중에 멈춘다.
+    await expect(page.locator('.barosim')).toHaveAttribute('data-phase', 'call', { timeout: 15_000 });
+    await page.getByRole('button', { name: '일시정지' }).click();
+    // 멈춘 직후 한 번 다시 그린 뒤로는 그림이 바뀌지 않아야 한다(줌을 맞추는 애니메이션이 늦게 다시 그리게 하면 안 된다).
+    await page.waitForTimeout(60);
+    const [before, count] = [await picture(), await draws()];
+    await page.waitForTimeout(1500);
+    expect(await picture()).toBe(before);
+    expect(await draws()).toBe(count);
+  });
+
   test('starts paused for visitors who ask for reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openDemo(page);
@@ -65,8 +89,18 @@ test.describe('BARO dispatch demo', () => {
       document.addEventListener('securitypolicyviolation', (e) => seen.push(`${e.effectiveDirective} ${e.blockedURI}`));
     });
     await openDemo(page);
+    // 차 위에 마우스를 올려 툴팁(위치를 style로 정하는 요소)까지 띄운다.
+    const canvas = page.locator('.bs-canvas');
+    const box = (await canvas.boundingBox())!;
+    let shown = false;
+    for (let y = box.height * 0.3; y < box.height * 0.7 && !shown; y += 10) {
+      for (let x = box.width * 0.3; x < box.width * 0.7 && !shown; x += 10) {
+        await canvas.hover({ position: { x, y } });
+        shown = await page.locator('.bs-tip').isVisible();
+      }
+    }
+    expect(shown).toBe(true);
     await expect(page.locator('.barosim')).toHaveAttribute('data-phase', 'reserve', { timeout: 25_000 });
-    await page.locator('.bs-canvas').hover({ position: { x: 40, y: 40 } });
     expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp)).toEqual([]);
   });
 

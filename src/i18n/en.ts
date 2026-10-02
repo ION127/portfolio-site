@@ -35,12 +35,9 @@ export const en: Record<keyof typeof ko, string> = {
   'section.retrospective': 'Limits & retrospective',
   'section.pending': 'This section is coming soon.',
   'architecture.hint':
-    'Scroll and the diagram on the right follows the text on the left. Hover over a node to see its specs.',
+    'Scroll and the diagram follows the text. Point at or select a node to see its specs.',
   'demo.baro':
-    'A demo where hundreds of cars move on a map and requests, dispatch, rides and relocation play out on their own',
-  'demo.stockpulse':
-    'A demo where recorded prices flow through the Kafka pipeline and sharp moves are detected and classified',
-  'demo.pending': 'Coming in the next update.',
+    'A demo where 1,500 cars move on a map and requests, dispatch, rides and relocation play out on their own',
   'sim.state.idle': 'Idle',
   'sim.state.pickup': 'Picking up',
   'sim.state.trip': 'On trip',
@@ -65,6 +62,7 @@ export const en: Record<keyof typeof ko, string> = {
   'sim.step.pickup': 'Dispatch confirmed, heading to the passenger',
   'sim.step.trip': 'On the way to the destination',
   'sim.step.relocate': 'Trip done, moving to a high-demand stand',
+  'sim.step.failed': 'No other free car within 15 km, so this request could not be dispatched',
   'replay.boardLabel': 'Board of 1-minute bars for 68 US and 40 Korean tickers, grouped by sector',
   'replay.market.us': 'US market',
   'replay.market.kr': 'Korea market',
@@ -82,6 +80,8 @@ export const en: Record<keyof typeof ko, string> = {
   'replay.reason.etfQuiet': 'The sector ETFs ({etfs}) did not move with it',
   'replay.reason.noPeers': 'No other stock in the sector moved',
   'replay.reason.etfMoved': 'The sector ETF ({etfs}) moved with it',
+  'replay.reason.marketSectors': 'Stocks in {n} sectors moved the same way: {sectors}',
+  'replay.reason.isEtf': 'The sector ETF itself moved',
   'replay.reason.peers': '{n} other stocks in the sector moved too',
   'replay.reason.market': 'Sector ETFs in {n} sectors moved the same way: {sectors}',
   'replay.news': 'Collected news, searching English sources for {en} and Korean sources for {kr}',

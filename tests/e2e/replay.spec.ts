@@ -1,10 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { collectPageErrors } from './helpers';
 
 async function openReplay(page: Page, path = '/projects/stockpulse/') {
+  const errors = collectPageErrors(page);
   await page.goto(path);
   await page.locator('#demo').scrollIntoViewIfNeeded();
   await expect(page.locator('.spreplay')).toHaveAttribute('data-ready', 'true', { timeout: 15_000 });
+  return errors;
 }
 
 test.describe('StockPulse pipeline replay', () => {
@@ -45,11 +48,22 @@ test.describe('StockPulse pipeline replay', () => {
       Object.defineProperty(window, '__csp', { value: seen });
       document.addEventListener('securitypolicyviolation', (e) => seen.push(`${e.effectiveDirective} ${e.blockedURI}`));
     });
-    await openReplay(page);
+    const errors = await openReplay(page);
     await expect(page.locator('.spreplay')).toHaveAttribute('data-phase', 'classify', { timeout: 20_000 });
     expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp)).toEqual([]);
+    // 서버 렌더링과 첫 화면이 어긋나면 하이드레이션 오류가 콘솔에 남는다.
+    expect(errors).toEqual([]);
     const result = await new AxeBuilder({ page }).include('#demo').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(result.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  test('shows only the open market on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openReplay(page);
+    await expect(page.locator('.sr-group.is-us').first()).toBeVisible();
+    await expect(page.locator('.sr-group.is-kr').first()).toBeHidden();
+    const overflow = await page.locator('.sr-board').evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
   });
 
   test('speaks English on the English page', async ({ page }) => {

@@ -4,6 +4,15 @@ import { en } from '../../src/i18n/en';
 import { isLocale, localeFromPath, localizePath, stripLocale, switchLocalePath, t } from '../../src/i18n';
 
 describe('dictionaries', () => {
+  it('describe the architecture section without assuming a side-by-side layout or a mouse', () => {
+    expect(ko['architecture.hint']).not.toMatch(/왼쪽|오른쪽|마우스/);
+    expect(en['architecture.hint']).not.toMatch(/left|right|hover/i);
+  });
+
+  it('keep no placeholder copy for demos that now exist', () => {
+    expect(Object.keys(ko).filter((k) => k.startsWith('demo.'))).toEqual(['demo.baro']);
+  });
+
   it('have the same keys and no empty strings', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ko).sort());
     for (const [key, value] of [...Object.entries(ko), ...Object.entries(en)]) {

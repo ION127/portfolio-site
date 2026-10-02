@@ -8,7 +8,11 @@ export const STEP_PHASES = ['detect', 'classify', 'news', 'analyze', 'notify'] a
 
 export const TIMING = {
   barS: 0.6,
-  /** 장면마다 몇 번째 봉에 급등락을 심는지 */
+  /**
+   * 장면마다 몇 번째 봉에 급등락을 심는지. 한국 장면은 이 간격으로 돌아오므로 KODEX 반도체(−2.6%, Z로만 잡힘)의
+   * 급락이 20봉 창에 쌓인다. 8이면 셋까지 쌓여 Z ≈ 2.3으로 잡히지만 6 이하면 넷이 쌓여 2 아래로 떨어진다.
+   * (테스트 'catches the same tickers with the same verdict on later rounds'가 지킨다)
+   */
   boardBars: 8,
   detect: 2.2,
   classify: 3.0,

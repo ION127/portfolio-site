@@ -12,8 +12,8 @@ export interface Scene {
   startMinute: number;
   news: { ko: readonly string[]; en: readonly string[] };
   analysis: I18n;
-  /** AI 분석이 한 번 실패해 DLQ로 갔다가 다시 처리되는 장면인지 */
-  dlq: boolean;
+  /** AI 분석 호출이 Groq 429를 받아 안내된 시간만큼 기다렸다 다시 부르는 장면인지(원본 _call_groq) */
+  retry: boolean;
 }
 
 export const SCENES: readonly Scene[] = [
@@ -31,7 +31,7 @@ export const SCENES: readonly Scene[] = [
       ko: '반도체 ETF(SMH · SOXX)는 잠잠한데 NVDA만 3.4% 올랐습니다. 업종 전체가 아니라 수요 전망 보도에 따른 개별 종목의 움직임으로 보입니다. (예시)',
       en: 'NVDA rose 3.4% while the semiconductor ETFs (SMH, SOXX) stayed flat — a single-stock move on the demand report rather than a sector-wide one. (example)',
     },
-    dlq: false,
+    retry: false,
   },
   {
     id: 'sector',
@@ -47,13 +47,13 @@ export const SCENES: readonly Scene[] = [
       ko: '삼성전자 −4.3%, SK하이닉스 −4.8%와 함께 KODEX 반도체도 −2.6% 내렸습니다. 섹터 ETF가 같이 움직여 업종 이벤트로 분류했고, 메모리 가격 전망이 업종 전반에 영향을 준 것으로 보입니다. (예시)',
       en: 'Samsung Electronics fell 4.3% and SK hynix 4.8%, with KODEX Semiconductor down 2.6% — the sector ETF moved too, so this is a sector event driven by the memory price outlook. (example)',
     },
-    dlq: true,
+    retry: true,
   },
   {
     id: 'market',
     market: 'us',
     headline: 'AAPL',
-    moves: { XLK: -1.8, XLF: -1.6, SMH: -2.1, XLY: -1.5, AAPL: -3.2, JPM: -2.4 },
+    moves: { XLK: -1.8, XLF: -1.6, SMH: -2.1, XLY: -1.6, AAPL: -3.2, JPM: -2.4 },
     startMinute: 14 * 60 + 2,
     news: {
       ko: ['미국 물가 지표가 예상을 웃돌았다는 발표 (예시)', '미국 국채 금리 급등 (예시)'],
@@ -63,6 +63,6 @@ export const SCENES: readonly Scene[] = [
       ko: '기술(XLK), 금융(XLF), 반도체(SMH), 소비재(XLY) ETF가 한꺼번에 1.5% 넘게 내렸습니다. 섹터 ETF 네 개가 같은 방향이라 시장 전체 이벤트로 분류했고, 금리 상승 우려가 넓게 반영된 것으로 보입니다. (예시)',
       en: 'The technology (XLK), financials (XLF), semiconductor (SMH) and consumer (XLY) ETFs all fell more than 1.5% — four sector ETFs moving together make this a market-wide event on rate worries. (example)',
     },
-    dlq: false,
+    retry: false,
   },
 ];

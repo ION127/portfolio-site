@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INSTRUMENTS, SECTORS, instrument } from '../../src/lib/sp-replay/universe';
+import { INSTRUMENTS, SECTORS, instrument, newsSearch } from '../../src/lib/sp-replay/universe';
 import { createMarket, WINDOW } from '../../src/lib/sp-replay/market';
 import { classify, detectLatest, RULES, zscore, type Anomaly } from '../../src/lib/sp-replay/detect';
 
@@ -26,6 +26,17 @@ describe('universe', () => {
     expect(instrument('AMZN')!.sector).toBe('consumer');
     expect(instrument('TSLA')!.sector).toBe('consumer');
     expect(instrument('KR:005930')!.name.ko).toBe('삼성전자');
+  });
+});
+
+describe('news queries (fetch_news_for_anomaly)', () => {
+  it('searches English news by ticker plus two sector keywords and Korean news by two keywords', () => {
+    expect(newsSearch('NVDA')).toEqual({ en: ['NVDA', 'semiconductor', 'chip'], kr: ['반도체', '칩'] });
+    expect(newsSearch('KR:005930')).toEqual({ en: ['005930', 'semiconductor', 'chip'], kr: ['반도체', '칩'] });
+    for (const s of SECTORS) {
+      expect(s.news.en).toHaveLength(2);
+      expect(s.news.kr).toHaveLength(2);
+    }
   });
 });
 

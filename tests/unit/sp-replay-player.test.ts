@@ -3,6 +3,7 @@ import { SCENES } from '../../src/lib/sp-replay/scenes';
 import { createPlayer, type Phase } from '../../src/lib/sp-replay/player';
 import { classify, detectLatest } from '../../src/lib/sp-replay/detect';
 import { createMarket } from '../../src/lib/sp-replay/market';
+import { instrument } from '../../src/lib/sp-replay/universe';
 
 describe('scenes', () => {
   it('produce an individual, a sector and a market-wide event through the real rules', () => {
@@ -15,6 +16,17 @@ describe('scenes', () => {
       expect(found.map((x) => x.symbol).sort()).toEqual(Object.keys(scene.moves).sort());
       expect(found.find((x) => x.symbol === scene.headline)!.eventType).toBe(expected[scene.id]);
     }
+  });
+
+  it('tell the market-wide story with numbers that match the board', () => {
+    const market = SCENES.find((s) => s.id === 'market')!;
+    const etfMoves = Object.entries(market.moves)
+      .filter(([symbol]) => instrument(symbol)!.etf)
+      .map(([, r]) => Math.abs(r));
+    expect(etfMoves).toHaveLength(4);
+    // 분석 문장은 섹터 ETF 네 개가 "1.5% 넘게" 내렸다고 말한다.
+    expect(market.analysis.ko).toContain('1.5% 넘게');
+    expect(Math.min(...etfMoves)).toBeGreaterThan(1.5);
   });
 
   it('mark their news and analysis as examples', () => {
@@ -41,13 +53,13 @@ describe('player', () => {
     return { p, phases, scenes };
   }
 
-  it('walks every scene through the pipeline, with the DLQ retry only in the sector scene', () => {
+  it('walks every scene through the pipeline, with the Groq 429 wait-and-retry only in the sector scene', () => {
     const { phases, scenes } = cycle();
     expect(scenes).toEqual(['individual', 'sector', 'market', 'individual']);
     const story = ['detect', 'classify', 'news', 'analyze', 'notify'];
     expect(phases).toEqual([
       'board', ...story,
-      'board', 'detect', 'classify', 'news', 'dlq', 'analyze', 'notify',
+      'board', 'detect', 'classify', 'news', 'retry', 'analyze', 'notify',
       'board', ...story,
       'board',
     ]);

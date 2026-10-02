@@ -41,7 +41,6 @@
 .spreplay .sr-pipe .tp { font: 10px var(--font-mono); fill: var(--muted); }
 .spreplay .sr-pipe .tp.on { fill: var(--accent-text); font-weight: 700; }
 .spreplay .sr-pipe .dlq rect { fill: var(--surface2); stroke: var(--line); stroke-dasharray: 4 3; }
-.spreplay .sr-pipe .dlq.on rect { stroke: var(--accent); }
 .spreplay .sr-pipe .msg { fill: var(--accent); }
 .spreplay .sr-story { display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-box); background: var(--surface); }
 .spreplay .sr-steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 5px; }

@@ -3,7 +3,7 @@ import './spreplay.css';
 import { t, type Locale, type UiKey } from '../i18n';
 import { RULES, type Classified } from '../lib/sp-replay/detect';
 import { createPlayer, STEP_PHASES, type Phase, type Player } from '../lib/sp-replay/player';
-import { INSTRUMENTS, SECTORS, instrument, sector, type Instrument, type Market } from '../lib/sp-replay/universe';
+import { INSTRUMENTS, SECTORS, instrument, newsSearch, sector, type Instrument, type Market } from '../lib/sp-replay/universe';
 
 interface Props {
   locale: Locale;
@@ -22,15 +22,15 @@ const TYPE_KEY: Record<Classified['eventType'], UiKey> = {
 const PATHS: Partial<Record<Phase, Point[]>> = {
   detect: [[80, 40], [80, 80]],
   news: [[80, 110], [80, 150]],
-  dlq: [[140, 165], [244, 165], [244, 235], [140, 235]],
+  retry: [[80, 180], [80, 220]],
   analyze: [[80, 180], [80, 220]],
   notify: [[80, 250], [80, 290]],
 };
 const NODES: { id: string; key: UiKey; y: number; on: Phase[] }[] = [
   { id: 'collector', key: 'replay.node.collector', y: 10, on: ['board', 'detect'] },
   { id: 'detector', key: 'replay.node.detector', y: 80, on: ['detect', 'classify'] },
-  { id: 'news', key: 'replay.node.news', y: 150, on: ['news', 'dlq'] },
-  { id: 'ai', key: 'replay.node.ai', y: 220, on: ['dlq', 'analyze'] },
+  { id: 'news', key: 'replay.node.news', y: 150, on: ['news'] },
+  { id: 'ai', key: 'replay.node.ai', y: 220, on: ['retry', 'analyze'] },
   { id: 'out', key: 'replay.node.out', y: 290, on: ['notify'] },
 ];
 
@@ -68,7 +68,7 @@ function story(locale: Locale, p: Player): { title: string; body: ReactNode } {
     return { title: fill(t(locale, 'replay.board'), { market: marketName }), body: null };
   }
   const hi = instrument(h.symbol);
-  const sec = sector(h.sector);
+  const search = newsSearch(h.symbol);
   if (p.phase === 'detect') {
     const more = p.anomalies.length > 1 ? fill(t(locale, 'replay.detectMore'), { n: p.anomalies.length }) : null;
     return {
@@ -97,11 +97,11 @@ function story(locale: Locale, p: Player): { title: string; body: ReactNode } {
   }
   if (p.phase === 'news') {
     return {
-      title: fill(t(locale, 'replay.news'), { keywords: sec?.keywords[locale] ?? '' }),
+      title: fill(t(locale, 'replay.news'), { en: search.en.join(' · '), kr: search.kr.join(' · ') }),
       body: <ul className="sr-body">{s.news[locale].map((n) => <li key={n}>{n}</li>)}</ul>,
     };
   }
-  if (p.phase === 'dlq') return { title: t(locale, 'replay.dlq'), body: null };
+  if (p.phase === 'retry') return { title: t(locale, 'replay.retry'), body: null };
   if (p.phase === 'analyze') return { title: t(locale, 'replay.analyze'), body: <p className="sr-body is-text">{s.analysis[locale]}</p> };
   return {
     title: t(locale, 'replay.notify'),
@@ -151,7 +151,8 @@ export default function SpReplay({ locale }: Props) {
         setVersion(seen);
       }
       const dot = dotRef.current;
-      const path = PATHS[player.phase];
+      // 429 재시도 장면에서는 메시지가 이미 AI 분석에 와 있으니 분석 단계에서 다시 흐르지 않는다.
+      const path = player.phase === 'analyze' && player.scene.retry ? undefined : PATHS[player.phase];
       if (dot) {
         if (path) {
           const [x, y] = pointOn(path, player.phaseElapsed / TRAVEL_S);
@@ -204,9 +205,10 @@ export default function SpReplay({ locale }: Props) {
     );
   };
   const { title, body } = story(locale, player);
-  const stepIndex = phase === 'dlq' ? STEP_PHASES.indexOf('analyze') : (STEP_PHASES as readonly string[]).indexOf(phase);
+  const stepIndex = phase === 'retry' ? STEP_PHASES.indexOf('analyze') : (STEP_PHASES as readonly string[]).indexOf(phase);
   const topic = active === 'us' ? 'stock.raw.us' : 'stock.raw.kr';
   const edgeOn = (p: Phase) => phase === p;
+  const arriving = edgeOn('retry') || (edgeOn('analyze') && !player.scene.retry);
 
   return (
     <figure ref={figRef} className={`spreplay is-${locale}`} data-phase={phase} data-scene={player.scene.id} data-ready={ready ? 'true' : 'false'}>
@@ -240,14 +242,15 @@ export default function SpReplay({ locale }: Props) {
         <svg className="sr-pipe" viewBox="0 0 300 330" aria-hidden="true">
           <path className={`eg${edgeOn('detect') ? ' on' : ''}`} d="M80,40 L80,80" />
           <path className={`eg${edgeOn('news') ? ' on' : ''}`} d="M80,110 L80,150" />
-          <path className={`eg${edgeOn('analyze') ? ' on' : ''}`} d="M80,180 L80,220" />
+          <path className={`eg${arriving ? ' on' : ''}`} d="M80,180 L80,220" />
           <path className={`eg${edgeOn('notify') ? ' on' : ''}`} d="M80,250 L80,290" />
-          <path className={`eg${edgeOn('dlq') ? ' on' : ''}`} d="M140,165 L244,165 L244,185 M244,215 L244,235 L140,235" />
+          {/* 서킷브레이커가 열렸을 때만 AI 분석이 메시지를 DLQ로 보낸다. 자동으로 돌아오는 길은 없다. */}
+          <path className="eg" d="M140,235 L244,235 L244,215" />
           <text className={`tp${edgeOn('detect') ? ' on' : ''}`} x="92" y="64">{topic}</text>
           <text className={`tp${edgeOn('news') ? ' on' : ''}`} x="92" y="134">anomaly.detected</text>
-          <text className={`tp${edgeOn('analyze') ? ' on' : ''}`} x="92" y="204">news.fetched</text>
+          <text className={`tp${arriving ? ' on' : ''}`} x="92" y="204">news.fetched</text>
           <text className={`tp${edgeOn('notify') ? ' on' : ''}`} x="92" y="274">analysis.completed</text>
-          <g className={`dlq${edgeOn('dlq') ? ' on' : ''}`}>
+          <g className="dlq">
             <rect x="190" y="185" width="108" height="30" rx="6" />
             <text className="tp" x="196" y="204">news.fetched.dlq</text>
           </g>

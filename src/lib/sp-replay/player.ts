@@ -2,8 +2,8 @@ import { classify, detectLatest, type Classified } from './detect';
 import { createMarket, type MarketState } from './market';
 import { SCENES, type Scene } from './scenes';
 
-export type Phase = 'board' | 'detect' | 'classify' | 'news' | 'dlq' | 'analyze' | 'notify';
-/** 해설 카드의 단계 점(DLQ는 분석 단계에 포함해 보여 준다) */
+export type Phase = 'board' | 'detect' | 'classify' | 'news' | 'retry' | 'analyze' | 'notify';
+/** 해설 카드의 단계 점(429 재시도는 분석 단계에 포함해 보여 준다) */
 export const STEP_PHASES = ['detect', 'classify', 'news', 'analyze', 'notify'] as const;
 
 export const TIMING = {
@@ -13,7 +13,7 @@ export const TIMING = {
   detect: 2.2,
   classify: 3.0,
   news: 2.6,
-  dlq: 2.6,
+  retry: 2.6,
   analyze: 3.2,
   notify: 2.6,
 };
@@ -81,8 +81,8 @@ export function createPlayer(seed = 2026): Player {
   const after: Record<Exclude<Phase, 'board'>, () => void> = {
     detect: () => go('classify'),
     classify: () => go('news'),
-    news: () => go(scene().dlq ? 'dlq' : 'analyze'),
-    dlq: () => go('analyze'),
+    news: () => go(scene().retry ? 'retry' : 'analyze'),
+    retry: () => go('analyze'),
     analyze: () => go('notify'),
     notify: () => startScene(sceneIndex + 1),
   };

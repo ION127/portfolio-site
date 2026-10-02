@@ -5,8 +5,8 @@ export type Market = 'us' | 'kr';
 export interface Sector {
   id: string;
   name: I18n;
-  /** 뉴스 수집에 쓰는 섹터 키워드(원본 keywords_kr · keywords_en의 앞 세 개) */
-  keywords: I18n;
+  /** 뉴스 검색에 실제로 쓰이는 섹터 키워드(원본 keywords_en · keywords_kr의 앞 두 개) */
+  news: { en: readonly string[]; kr: readonly string[] };
 }
 
 export interface Instrument {
@@ -22,16 +22,16 @@ export interface Instrument {
 
 // 출처: ION127/StockPulse core/stock_categories.py의 STOCK_CATEGORIES.
 export const SECTORS: readonly Sector[] = [
-  { id: 'semi', name: { ko: '반도체', en: 'Semiconductor' }, keywords: { ko: '반도체 · 칩 · GPU', en: 'semiconductor · chip · GPU' } },
-  { id: 'tech', name: { ko: '기술', en: 'Technology' }, keywords: { ko: '소프트웨어 · 클라우드 · AI', en: 'software · cloud · AI' } },
-  { id: 'fin', name: { ko: '금융', en: 'Financials' }, keywords: { ko: '금융 · 금리 · 한국은행', en: 'bank · Fed · interest rate' } },
-  { id: 'energy', name: { ko: '에너지', en: 'Energy' }, keywords: { ko: '원유 · 정유 · OPEC', en: 'oil · gas · crude' } },
-  { id: 'health', name: { ko: '헬스케어', en: 'Healthcare' }, keywords: { ko: '바이오 · 신약 · 임상', en: 'FDA · drug approval · clinical trial' } },
-  { id: 'ev', name: { ko: '전기차', en: 'EV & Battery' }, keywords: { ko: '전기차 · 배터리 · 리튬', en: 'EV · electric vehicle · battery' } },
-  { id: 'defense', name: { ko: '방산', en: 'Defense' }, keywords: { ko: '방산 · 무기 · 미사일', en: 'defense · military · NATO' } },
-  { id: 'materials', name: { ko: '소재', en: 'Materials' }, keywords: { ko: '철강 · 구리 · 포스코', en: 'steel · copper · iron' } },
-  { id: 'realestate', name: { ko: '부동산', en: 'Real Estate' }, keywords: { ko: '리츠 · 부동산 · 아파트', en: 'REIT · real estate · mortgage' } },
-  { id: 'consumer', name: { ko: '소비재', en: 'Consumer' }, keywords: { ko: '소비재 · 유통 · 소비', en: 'consumer · retail · spending' } },
+  { id: 'semi', name: { ko: '반도체', en: 'Semiconductor' }, news: { en: ['semiconductor', 'chip'], kr: ['반도체', '칩'] } },
+  { id: 'tech', name: { ko: '기술', en: 'Technology' }, news: { en: ['software', 'cloud'], kr: ['소프트웨어', '클라우드'] } },
+  { id: 'fin', name: { ko: '금융', en: 'Financials' }, news: { en: ['bank', 'Fed'], kr: ['금융', '금리'] } },
+  { id: 'energy', name: { ko: '에너지', en: 'Energy' }, news: { en: ['oil', 'gas'], kr: ['원유', '정유'] } },
+  { id: 'health', name: { ko: '헬스케어', en: 'Healthcare' }, news: { en: ['FDA', 'drug approval'], kr: ['바이오', '신약'] } },
+  { id: 'ev', name: { ko: '전기차', en: 'EV & Battery' }, news: { en: ['EV', 'electric vehicle'], kr: ['전기차', '배터리'] } },
+  { id: 'defense', name: { ko: '방산', en: 'Defense' }, news: { en: ['defense', 'military'], kr: ['방산', '무기'] } },
+  { id: 'materials', name: { ko: '소재', en: 'Materials' }, news: { en: ['steel', 'copper'], kr: ['철강', '구리'] } },
+  { id: 'realestate', name: { ko: '부동산', en: 'Real Estate' }, news: { en: ['REIT', 'real estate'], kr: ['리츠', '부동산'] } },
+  { id: 'consumer', name: { ko: '소비재', en: 'Consumer' }, news: { en: ['consumer', 'retail'], kr: ['소비재', '유통'] } },
 ];
 
 const us = (symbol: string, sector: string, name: string, etf = false): Instrument => ({
@@ -175,3 +175,11 @@ export const INSTRUMENTS: readonly Instrument[] = [
 const bySymbol = new Map(INSTRUMENTS.map((i) => [i.symbol, i]));
 export const instrument = (symbol: string): Instrument | undefined => bySymbol.get(symbol);
 export const sector = (id: string): Sector | undefined => SECTORS.find((s) => s.id === id);
+
+/** 원본 fetch_news_for_anomaly처럼 영문은 티커 + 섹터 키워드(검색어 최대 3개), 한글은 섹터 키워드 2개로 찾는다. */
+export function newsSearch(symbol: string): { en: string[]; kr: string[] } {
+  const ins = instrument(symbol);
+  const s = ins ? sector(ins.sector) : undefined;
+  if (!s) return { en: [], kr: [] };
+  return { en: [symbol.replace('KR:', ''), ...s.news.en].slice(0, 3), kr: s.news.kr.slice(0, 2) };
+}

@@ -5,6 +5,7 @@ import { t, type Locale, type UiKey } from '../i18n';
 import { boundsOf } from '../lib/baro-sim/demand';
 import { createDirector, SPOTLIGHT_PHASES, type Director, type Phase } from '../lib/baro-sim/director';
 import { createSim, DEFAULTS, type CountKey, type Sim } from '../lib/baro-sim/engine';
+import { formatDistance } from '../lib/baro-sim/format';
 import { haversineMeters, metersToLngDeg, type LatLng } from '../lib/baro-sim/geo';
 
 interface Props {
@@ -39,10 +40,9 @@ const STATE_LABEL: Record<CountKey, UiKey> = {
   relocating: 'sim.state.relocating',
 };
 
-const km = (m: number, locale: Locale) => `${(m / 1000).toFixed(1)}${locale === 'ko' ? 'km' : ' km'}`;
-
 function narration(locale: Locale, director: Director, sim: Sim): string {
   const s = director.spotlight;
+  if (s?.failed) return t(locale, 'sim.step.failed');
   switch (director.phase) {
     case 'overview':
       return t(locale, 'sim.step.overview');
@@ -51,7 +51,7 @@ function narration(locale: Locale, director: Director, sim: Sim): string {
     case 'search':
       return t(locale, 'sim.step.search');
     case 'reserve':
-      return t(locale, 'sim.step.reserve').replace('{distance}', km(s?.distanceM ?? 0, locale));
+      return t(locale, 'sim.step.reserve').replace('{distance}', formatDistance(s?.distanceM ?? 0, locale));
     case 'ack': {
       if (s?.ackFailed && !s.waitingSilent) return t(locale, 'sim.step.ackFailed');
       const call = s ? sim.calls.get(s.callId) : undefined;
@@ -76,6 +76,7 @@ export default function BaroSim({ locale, seed }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(false);
   const snapshotRef = useRef<(() => PanelState) | null>(null);
+  const cameraRef = useRef<{ stop(): void; resume(): void } | null>(null);
   const [ready, setReady] = useState(false);
   const [paused, setPaused] = useState(false);
   const [panel, setPanel] = useState<PanelState | null>(null);
@@ -122,10 +123,16 @@ export default function BaroSim({ locale, seed }: Props) {
       const seoul = L.latLngBounds([b.south, b.west], [b.north, b.east]);
       map.fitBounds(seoul, { padding: [12, 12], animate: false });
 
+      // 카메라가 움직이면 차량 화면 좌표가 바뀌니 다시 그린다.
+      map.on('move zoom', () => {
+        dirty = true;
+      });
       const ll = (p: LatLng) => L.latLng(p.lat, p.lng);
       const pt = (p: LatLng) => map.latLngToContainerPoint([p.lat, p.lng]);
       const projected = new Float32Array(sim.vehicles.length * 2);
 
+      // 바뀐 것이 있을 때만 다시 그린다(멈춤 · 설명 중에 매 프레임 그리지 않게).
+      let dirty = true;
       let dpr = 1;
       let width = 0;
       let height = 0;
@@ -137,6 +144,7 @@ export default function BaroSim({ locale, seed }: Props) {
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         map.invalidateSize({ animate: false });
+        dirty = true;
       };
       resize();
       const ro = new ResizeObserver(resize);
@@ -150,6 +158,7 @@ export default function BaroSim({ locale, seed }: Props) {
       let colors = readColors();
       const themeObserver = new MutationObserver(() => {
         colors = readColors();
+        dirty = true;
       });
       themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
@@ -321,9 +330,17 @@ export default function BaroSim({ locale, seed }: Props) {
         last = now;
         // 화면 밖이거나 탭이 가려져 있으면 계산도 그리기도 하지 않는다.
         if (!visible || document.hidden) return;
-        if (!pausedRef.current) director.tick(wallDt);
+        if (!pausedRef.current) {
+          const simTime = sim.time;
+          const phase = director.phase;
+          director.tick(wallDt);
+          if (sim.time !== simTime || director.phase !== phase) dirty = true;
+        }
         moveCamera();
-        draw();
+        if (dirty) {
+          dirty = false;
+          draw();
+        }
         if (now - panelAt > PANEL_REFRESH_MS || director.phase !== panelPhase) {
           panelAt = now;
           panelPhase = director.phase;
@@ -360,6 +377,13 @@ export default function BaroSim({ locale, seed }: Props) {
       canvas.addEventListener('mouseleave', onLeave);
 
       snapshotRef.current = snapshot;
+      // 일시정지하면 날아가던 카메라도 그 자리에서 멈추고, 다시 재생하면 지금 단계의 장면으로 이어서 간다.
+      cameraRef.current = {
+        stop: () => map.stop(),
+        resume: () => {
+          lastPhase = null;
+        },
+      };
       setPanel(snapshot());
       setReady(true);
       cleanup = () => {
@@ -369,6 +393,7 @@ export default function BaroSim({ locale, seed }: Props) {
         themeObserver.disconnect();
         canvas.removeEventListener('mousemove', onMove);
         canvas.removeEventListener('mouseleave', onLeave);
+        cameraRef.current = null;
         map.remove();
       };
     })().catch(() => {
@@ -386,6 +411,8 @@ export default function BaroSim({ locale, seed }: Props) {
     const next = !pausedRef.current;
     pausedRef.current = next;
     if (next && snapshotRef.current) setPanel(snapshotRef.current());
+    if (next) cameraRef.current?.stop();
+    else cameraRef.current?.resume();
     setPaused(next);
   };
 

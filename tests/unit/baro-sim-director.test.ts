@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createSim } from '../../src/lib/baro-sim/engine';
-import { ACK_WAIT_SCALE, createDirector, TIME_SCALE, type Phase } from '../../src/lib/baro-sim/director';
+import { createSim, type Sim } from '../../src/lib/baro-sim/engine';
+import { ACK_WAIT_SCALE, createDirector, DEFAULT_TIMING, TIME_SCALE, type Director, type Phase } from '../../src/lib/baro-sim/director';
 
 const sim = () => createSim({ seed: 7, vehicleCount: 400, callsPerMinute: 20 });
 
@@ -27,6 +27,18 @@ function run(spotlights: number) {
     }
   }
   return { phases, scales, failed, ended };
+}
+
+function runUntil(d: Director, phase: Phase) {
+  for (let i = 0; i < 20_000 && d.phase !== phase; i++) d.tick(0.05);
+  expect(d.phase).toBe(phase);
+}
+
+/** car가 있는 자리에 다른 호출을 넣어 그 차를 배차한다. */
+function takeCar(s: Sim, id: number) {
+  const car = s.vehicleById(id)!;
+  s.dispatch(s.addCall(car.pos, s.randomTripDestination(car.pos)));
+  return car;
 }
 
 describe('director', () => {
@@ -57,6 +69,33 @@ describe('director', () => {
     expect([...scales.get('pickup')!]).toEqual([60]);
     expect([...scales.get('trip')!]).toEqual([60]);
     expect([...scales.get('relocate')!]).toEqual([30]);
+  });
+
+  it('lets go of a relocating car as soon as another request takes it', () => {
+    const s = sim();
+    const d = createDirector(s);
+    runUntil(d, 'relocate');
+    const car = takeCar(s, d.spotlight!.vehicleId!);
+    expect(car.state).toBe('reserved');
+    d.tick(0.01);
+    expect(d.phase).toBe('overview');
+    expect(d.spotlight).toBeNull();
+  });
+
+  it('explains a ride that has no car left to retry before returning to the city view', () => {
+    const s = createSim({ seed: 7, vehicleCount: 3, callsPerMinute: 0 });
+    const d = createDirector(s, { ...DEFAULT_TIMING, failEvery: 1 });
+    runUntil(d, 'ack');
+    const spot = d.spotlight!;
+    expect(spot.waitingSilent).toBe(true);
+    // 응답하지 않는 차를 놓은 뒤 다시 배차할 빈 차가 없도록, 나머지 차를 모두 다른 호출에 배차한다.
+    for (const v of s.vehicles) if (v.id !== spot.vehicleId && (v.state === 'idle' || v.state === 'relocating')) takeCar(s, v.id);
+    for (let i = 0; i < 400 && !d.spotlight?.failed; i++) d.tick(0.05);
+    expect(d.spotlight?.failed).toBe(true);
+    expect(d.phase).toBe('ack');
+    expect(d.timeScale).toBe(0);
+    d.tick(DEFAULT_TIMING.failedS);
+    expect(d.phase).toBe('overview');
   });
 
   it('shows the missed-ACK retry on every third ride', () => {

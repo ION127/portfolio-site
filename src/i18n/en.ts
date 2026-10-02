@@ -37,7 +37,7 @@ export const en: Record<keyof typeof ko, string> = {
   'architecture.hint':
     'Scroll and the diagram on the right follows the text on the left. Hover over a node to see its specs.',
   'demo.baro':
-    'A demo where hundreds of cars move on a map and requests, dispatch, rides and relocation play out on their own',
+    'A demo where 1,500 cars move on a map and requests, dispatch, rides and relocation play out on their own',
   'demo.stockpulse':
     'A demo where recorded prices flow through the Kafka pipeline and sharp moves are detected and classified',
   'demo.pending': 'Coming in the next update.',
@@ -65,6 +65,7 @@ export const en: Record<keyof typeof ko, string> = {
   'sim.step.pickup': 'Dispatch confirmed, heading to the passenger',
   'sim.step.trip': 'On the way to the destination',
   'sim.step.relocate': 'Trip done, moving to a high-demand stand',
+  'sim.step.failed': 'No other free car within 15 km, so this request could not be dispatched',
   'replay.boardLabel': 'Board of 1-minute bars for 68 US and 40 Korean tickers, grouped by sector',
   'replay.market.us': 'US market',
   'replay.market.kr': 'Korea market',

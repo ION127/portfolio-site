@@ -34,7 +34,7 @@ export const ko = {
   'section.pending': '이 섹션은 준비 중입니다.',
   'architecture.hint':
     '스크롤을 내리면 왼쪽 설명을 따라 오른쪽 다이어그램이 움직입니다. 노드에 마우스를 올리면 사양이 보입니다.',
-  'demo.baro': '지도 위 차량 수백 대가 움직이고, 호출 → 배차 → 이동 → 재배치가 저절로 진행되는 데모',
+  'demo.baro': '지도 위 차량 1,500대가 움직이고, 호출 → 배차 → 이동 → 재배치가 저절로 진행되는 데모',
   'demo.stockpulse': '녹화한 시세가 Kafka 파이프라인을 흐르며 급등락 탐지와 분류가 진행되는 데모',
   'demo.pending': '다음 업데이트에서 공개합니다.',
   'sim.state.idle': '대기',
@@ -61,6 +61,7 @@ export const ko = {
   'sim.step.pickup': '배차가 확정되어 승객에게 가고 있습니다',
   'sim.step.trip': '목적지로 운행 중입니다',
   'sim.step.relocate': '운행을 마치고 수요가 많은 승차대로 이동합니다',
+  'sim.step.failed': '반경 15km 안에 다시 배차할 빈 차가 없어 이번 호출은 배차하지 못했습니다',
   'replay.boardLabel': '미국 68종목과 한국 40종목의 1분봉을 섹터별로 보여 주는 판',
   'replay.market.us': '미국 장',
   'replay.market.kr': '한국 장',

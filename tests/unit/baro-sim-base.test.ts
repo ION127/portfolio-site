@@ -3,6 +3,7 @@ import { between, createRng, intBetween, pickWeighted } from '../../src/lib/baro
 import { haversineMeters, jitter, moveToward } from '../../src/lib/baro-sim/geo';
 import { STANDS } from '../../src/lib/baro-sim/stands';
 import { AREAS, boundsOf, demandWeight, nearestArea } from '../../src/lib/baro-sim/demand';
+import { formatDistance } from '../../src/lib/baro-sim/format';
 
 const SEOUL_STATION = { lat: 37.5547, lng: 126.9707 };
 const GANGNAM = { lat: 37.4979, lng: 127.0276 };
@@ -45,6 +46,15 @@ describe('geo', () => {
   it('jitters within the radius', () => {
     const rng = createRng(3);
     for (let i = 0; i < 1000; i++) expect(haversineMeters(GANGNAM, jitter(rng, GANGNAM, 400))).toBeLessThanOrEqual(401);
+  });
+});
+
+describe('distance label', () => {
+  it('shows metres below one kilometre and kilometres with one decimal above', () => {
+    expect(formatDistance(4, 'ko')).toBe('10m');
+    expect(formatDistance(354, 'en')).toBe('350 m');
+    expect(formatDistance(996, 'ko')).toBe('1.0km');
+    expect(formatDistance(4321, 'en')).toBe('4.3 km');
   });
 });
 

@@ -57,6 +57,7 @@ export interface SimOptions {
   callsPerMinute?: number;
   speedKmh?: number;
   searchRadiusM?: number;
+  maxCandidates?: number;
   ackTimeoutS?: number;
   backgroundAckFailRate?: number;
   relocationRadiiM?: readonly number[];
@@ -72,7 +73,9 @@ export const DEFAULTS = {
   vehicleCount: 1500, // baro-edge vehicle_simulator.py
   callsPerMinute: 75, // 데모용. 바쁜 차(픽업·운행)가 30~40%가 되게 맞춘 값
   speedKmh: 60, // baro-edge config.py SIM_VEHICLE_SPEED
-  searchRadiusM: 5000, // dispatch-service idle-car-search-radius-km
+  // dispatch-service는 반경 목록(idle-car-search-radii-km: 5, 10, 15) 중 가장 큰 값으로 한 번 찾는다(RedisDispatchableCarProjection).
+  searchRadiusM: 15_000,
+  maxCandidates: 10, // DispatchRedisProperties.idleCarMaxCandidates
   ackTimeoutS: 10, // dispatch-service ack-timeout-seconds
   backgroundAckFailRate: 0.02, // 데모용
   relocationRadiiM: [10_000, 30_000] as readonly number[], // relocation-service RelocationService
@@ -146,6 +149,7 @@ export function createSim(options: SimOptions): Sim {
   const callsPerMinute = options.callsPerMinute ?? DEFAULTS.callsPerMinute;
   const speedMps = ((options.speedKmh ?? DEFAULTS.speedKmh) * 1000) / 3600;
   const searchRadiusM = options.searchRadiusM ?? DEFAULTS.searchRadiusM;
+  const maxCandidates = options.maxCandidates ?? DEFAULTS.maxCandidates;
   const ackTimeoutS = options.ackTimeoutS ?? DEFAULTS.ackTimeoutS;
   const backgroundAckFailRate = options.backgroundAckFailRate ?? DEFAULTS.backgroundAckFailRate;
   const radii = options.relocationRadiiM ?? DEFAULTS.relocationRadiiM;
@@ -191,6 +195,7 @@ export function createSim(options: SimOptions): Sim {
       .map((v) => ({ v, d: haversineMeters(point, v.pos) }))
       .filter((x) => x.d <= searchRadiusM)
       .sort((a, b) => a.d - b.d)
+      .slice(0, maxCandidates)
       .map((x) => x.v);
   }
 

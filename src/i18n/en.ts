@@ -54,11 +54,11 @@ export const en: Record<keyof typeof ko, string> = {
   'sim.seconds': '{n} s',
   'sim.mapLabel': 'Simulation of 1,500 cars in Seoul cycling through requests, dispatch, trips and relocation',
   'sim.note':
-    'The live service’s dispatch rules (5 km search radius, 10 s ACK, relocation score) replayed in the browser. Routes are simplified to straight lines and demand weights are examples.',
+    'The live service’s dispatch rules (10 nearest candidates within 15 km, 10 s ACK, relocation score) replayed in the browser. Routes are simplified to straight lines and demand weights are examples.',
   'sim.step.overview': '1,500 cars are taking ride requests across Seoul',
   'sim.step.call': 'A ride request comes in near {area}',
   'sim.step.callCity': 'A ride request comes in somewhere in Seoul',
-  'sim.step.search': 'Looking for free cars within 5 km',
+  'sim.step.search': 'Finding the 10 nearest free cars within 15 km',
   'sim.step.reserve': 'Reserving the nearest car ({distance})',
   'sim.step.ackWait': 'Waiting for the car to acknowledge',
   'sim.step.ackFailed': 'No answer within 10 s, re-dispatching to the next car',

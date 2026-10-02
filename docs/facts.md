@@ -8,7 +8,7 @@
 | baro.vehicles | 동시 시뮬레이션 차량 1,500대 | baro-edge `config.py` (`vehicle_count`) | 초안 |
 | baro.stands | 서울 택시승차대 254곳에서 출발 | baro-edge `config.py` (승차대 좌표) | 초안 |
 | baro.demo-speed | 데모 차량 시속 60km, 직선 이동 | baro-edge `config.py` (`SIM_VEHICLE_SPEED`) | 초안 |
-| baro.demo-radius | 배차 후보: 호출 지점 반경 5km 안 가장 가까운 대기 차량 | baro-server dispatch-service `application.yml` (`idle-car-search-radius-km`), `ConfirmDispatchService.reserveNearestIdleCar` | 초안 |
+| baro.demo-radius | 배차 후보: 호출 지점 반경 15km 안에서 가까운 대기 차량 최대 10대, 그중 가장 가까운 차를 예약. 반경 목록(5·10·15km) 중 가장 큰 값으로 한 번 찾는다. 2026-06-15(PR #72) 전에는 반경 5km | baro-server dispatch-service `application.yml` (`idle-car-search-radii-km`), `RedisDispatchableCarProjection.findNearestIdleCars`, `DispatchRedisProperties` (`idleCarMaxCandidates`), `ConfirmDispatchService.reserveNearestIdleCar` | 초안 |
 | baro.demo-ack | ACK 10초 안에 없으면 다시 배차 | dispatch-service `application.yml` (`ack-timeout-seconds`) | 초안 |
 | baro.demo-relocation | 재배치: 반경 10km(없으면 30km) 승차대 중 0.7 × 정규화 가중치 − 0.3 × 정규화 거리 | relocation-service `RelocationService.assignRelocation` | 초안 |
 | baro.lag | Kafka consumer lag 2.9M → hot path DB 조회 제거로 해소 | baro-server PR #89 | 초안 |

@@ -5,7 +5,7 @@ import { t, type Locale, type UiKey } from '../i18n';
 import { boundsOf } from '../lib/baro-sim/demand';
 import { createDirector, SPOTLIGHT_PHASES, type Director, type Phase } from '../lib/baro-sim/director';
 import { createSim, DEFAULTS, type CountKey, type Sim } from '../lib/baro-sim/engine';
-import { metersToLngDeg, type LatLng } from '../lib/baro-sim/geo';
+import { haversineMeters, metersToLngDeg, type LatLng } from '../lib/baro-sim/geo';
 
 interface Props {
   locale: Locale;
@@ -30,6 +30,7 @@ const HOVER_RADIUS_PX = 6;
 const REDUCED_QUERY = '(prefers-reduced-motion: reduce)';
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const LEAFLET_ATTRIBUTION = '<a href="https://leafletjs.com">Leaflet</a>';
 const COUNT_KEYS: CountKey[] = ['idle', 'pickup', 'trip', 'relocating'];
 const STATE_LABEL: Record<CountKey, UiKey> = {
   idle: 'sim.state.idle',
@@ -114,8 +115,9 @@ export default function BaroSim({ locale, seed }: Props) {
         touchZoom: false,
         zoomSnap: 0.25,
       });
-      map.attributionControl.setPrefix(false);
-      L.tileLayer(TILE_URL, { maxZoom: 19, attribution: OSM_ATTRIBUTION }).addTo(map);
+      map.attributionControl.setPrefix(LEAFLET_ATTRIBUTION);
+      // 카메라가 날아가는 동안에는 타일을 받지 않고, 멈춘 뒤 보이는 범위만 한 번 받는다(OSM 타일 정책, 중간 취소 방지).
+      L.tileLayer(TILE_URL, { maxZoom: 19, attribution: OSM_ATTRIBUTION, updateWhenIdle: true, updateWhenZooming: false }).addTo(map);
       const b = boundsOf(sim.stands);
       const seoul = L.latLngBounds([b.south, b.west], [b.north, b.east]);
       map.fitBounds(seoul, { padding: [12, 12], animate: false });
@@ -173,8 +175,16 @@ export default function BaroSim({ locale, seed }: Props) {
         const o = pt(s.origin);
         ctx.lineWidth = 2;
         if (phase === 'search' || phase === 'reserve' || phase === 'ack') {
-          const edge = pt({ lat: s.origin.lat, lng: s.origin.lng + metersToLngDeg(s.origin.lat, DEFAULTS.searchRadiusM) });
-          const radius = Math.hypot(edge.x - o.x, edge.y - o.y);
+          // 최대 반경(15km) 안에서 가까운 후보 10대가 들어오는 범위를 원으로 보여 준다.
+          const reach = Math.min(
+            DEFAULTS.searchRadiusM,
+            Math.max(0, ...s.candidateIds.map((id) => {
+              const c = sim.vehicleById(id);
+              return c ? haversineMeters(s.origin, c.pos) : 0;
+            })),
+          );
+          const edge = pt({ lat: s.origin.lat, lng: s.origin.lng + metersToLngDeg(s.origin.lat, reach) });
+          const radius = Math.hypot(edge.x - o.x, edge.y - o.y) + r + 3;
           ctx.strokeStyle = colors.pickup;
           ctx.fillStyle = colors.pickup;
           ctx.globalAlpha = 0.07;
@@ -383,8 +393,9 @@ export default function BaroSim({ locale, seed }: Props) {
   return (
     <figure ref={figRef} className="barosim" data-phase={panel?.phase ?? 'loading'} data-ready={ready ? 'true' : 'false'}>
       <div className="bs-stage">
-        <div ref={mapRef} className="bs-map" role="img" aria-label={t(locale, 'sim.mapLabel')} />
-        <canvas ref={canvasRef} className="bs-canvas" aria-hidden="true" />
+        <div ref={mapRef} className="bs-map" />
+        {/* 지도 영역에는 출처 링크가 들어가므로 그림 역할(role=img)은 차량을 그리는 캔버스에 둔다. */}
+        <canvas ref={canvasRef} className="bs-canvas" role="img" aria-label={t(locale, 'sim.mapLabel')} />
         {tip && (
           <div className="bs-tip" style={{ left: tip.x, top: tip.y }}>
             {tip.text}

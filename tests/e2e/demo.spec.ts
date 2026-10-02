@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 // 테스트는 OSM 타일 서버에 기대지 않는다. 1×1 PNG로 대신 응답한다.
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
@@ -18,6 +19,8 @@ test.describe('BARO dispatch demo', () => {
     await openDemo(page);
     await expect(page.locator('.barosim .leaflet-container')).toBeVisible();
     await expect(page.locator('.barosim .leaflet-control-attribution')).toContainText('OpenStreetMap');
+    // Leaflet(BSD-2) 저작권 표기도 지도에 남긴다.
+    await expect(page.locator('.barosim .leaflet-control-attribution')).toContainText('Leaflet');
     await expect.poll(() => total(page)).toBe(1500);
   });
 
@@ -26,7 +29,7 @@ test.describe('BARO dispatch demo', () => {
     const fig = page.locator('.barosim');
     await expect(fig).toHaveAttribute('data-phase', 'call', { timeout: 15_000 });
     await expect(fig).toHaveAttribute('data-phase', 'search', { timeout: 10_000 });
-    await expect(page.locator('.bs-text')).toContainText('반경 5km');
+    await expect(page.locator('.bs-text')).toContainText('가장 가까운 빈 차 10대');
     await expect(fig).toHaveAttribute('data-phase', 'reserve', { timeout: 10_000 });
     await expect(page.locator('.bs-text')).toContainText('가장 가까운 차');
   });
@@ -65,6 +68,27 @@ test.describe('BARO dispatch demo', () => {
     await expect(page.locator('.barosim')).toHaveAttribute('data-phase', 'reserve', { timeout: 25_000 });
     await page.locator('.bs-canvas').hover({ position: { x: 40, y: 40 } });
     expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp)).toEqual([]);
+  });
+
+  test('has no accessibility violations once the map is loaded', async ({ page }) => {
+    await openDemo(page);
+    const result = await new AxeBuilder({ page }).include('#demo').withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+    expect(result.violations.map((v) => v.id)).toEqual([]);
+  });
+
+  test('does not start and abort tile downloads while the camera flies', async ({ page }) => {
+    const aborted: string[] = [];
+    page.on('requestfailed', (r) => {
+      if (r.url().startsWith('https://tile.openstreetmap.org/')) aborted.push(r.url());
+    });
+    await openDemo(page);
+    // 느린 타일 서버를 흉내 낸다. 카메라가 움직이는 도중에 받기 시작하면 다음 이동에서 취소된다.
+    await page.route('https://tile.openstreetmap.org/**', async (route) => {
+      await new Promise((r) => setTimeout(r, 250));
+      await route.fulfill({ contentType: 'image/png', body: PNG }).catch(() => {});
+    });
+    await page.waitForTimeout(15_000);
+    expect(aborted).toEqual([]);
   });
 
   test('speaks English on the English page', async ({ page }) => {

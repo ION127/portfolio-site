@@ -23,14 +23,14 @@ describe('starting fleet', () => {
   });
 
   it('uses the rules from the real code', () => {
-    expect(DEFAULTS).toMatchObject({ vehicleCount: 1500, speedKmh: 60, searchRadiusM: 5000, ackTimeoutS: 10 });
+    expect(DEFAULTS).toMatchObject({ vehicleCount: 1500, speedKmh: 60, searchRadiusM: 15_000, maxCandidates: 10, ackTimeoutS: 10 });
     expect(DEFAULTS.relocationRadiiM).toEqual([10_000, 30_000]);
   });
 });
 
 describe('dispatch', () => {
-  it('reserves the nearest free car within 5 km and skips reserved or distant ones', () => {
-    const sim = createSim({ seed: 1, ...quiet, stands: [O], vehiclePositions: [north(6000), north(1000), north(2000)] });
+  it('reserves the nearest free car within 15 km and skips reserved or distant ones', () => {
+    const sim = createSim({ seed: 1, ...quiet, stands: [O], vehiclePositions: [north(16_000), north(1000), north(2000)] });
     const first = sim.dispatch(sim.addCall(O, DEST, { manual: true }));
     expect(first[0]).toMatchObject({ type: 'reserved', vehicleId: 1002 });
     expect((first[0] as { distanceM: number }).distanceM).toBeCloseTo(1000, -1);
@@ -38,6 +38,15 @@ describe('dispatch', () => {
     const third = sim.addCall(O, DEST, { manual: true });
     expect(sim.dispatch(third)).toEqual([{ type: 'failed', callId: third }]);
     expect(sim.calls.get(third)!.status).toBe('failed');
+  });
+
+  it('searches up to 15 km and keeps only the 10 nearest candidates, like the real service', () => {
+    const far = createSim({ seed: 1, ...quiet, stands: [O], vehiclePositions: [north(12_000)] });
+    expect(far.dispatch(far.addCall(O, DEST, { manual: true }))[0]).toMatchObject({ type: 'reserved', vehicleId: 1001 });
+    const many = createSim({ seed: 1, ...quiet, stands: [O], vehiclePositions: Array.from({ length: 12 }, (_, i) => north((i + 1) * 1000)) });
+    const found = many.candidates(O);
+    expect(found).toHaveLength(10);
+    expect(found[9]!.id).toBe(1010);
   });
 
   it('re-dispatches to the next car when the first one does not acknowledge within 10 s', () => {

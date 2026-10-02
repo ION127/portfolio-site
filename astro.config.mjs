@@ -22,7 +22,9 @@ export default defineConfig({
     csp: {
       directives: [
         "default-src 'self'",
-        "img-src 'self'",
+        // 지도 데모의 OpenStreetMap 타일(사이트의 유일한 외부 요청). data:는 Leaflet이 줌을 바꿀 때
+        // 받다 만 타일에 넣는 빈 이미지다. 이미지라 스크립트를 실행할 수 없다.
+        "img-src 'self' data: https://tile.openstreetmap.org",
         "font-src 'self'",
         "connect-src 'self'",
         "object-src 'none'",

@@ -118,6 +118,18 @@ describe('road routing', () => {
     expect(near(roads.nodePos(roads.nearestNode(p)), y)).toBe(true);
   });
 
+  it('gives up on points far outside the road data instead of treating two missing junctions as one', () => {
+    const roads = gridRoads();
+    expect(roads.route({ lat: 40, lng: 127 }, { lat: 40.5, lng: 127 })).toBeNull();
+  });
+
+  it('answers at once that an empty network has no junction', () => {
+    const empty = decodeRoads({ version: 1, attribution: 'test', scale: 100_000, nodes: [], edges: [], geometry: [] });
+    const started = performance.now();
+    expect(empty.nearestNode({ lat: 37.5, lng: 127 })).toBe(-1);
+    expect(performance.now() - started).toBeLessThan(1);
+  });
+
   it('hands out a fresh array each time, even for a cached path', () => {
     const roads = gridRoads();
     const a = roads.route(gridPoint(0, 0), gridPoint(2, 2))!;

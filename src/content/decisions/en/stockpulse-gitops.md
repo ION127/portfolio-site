@@ -6,5 +6,5 @@ context: 'Building nine images — eight services plus ml-trainer — and rollin
 alternatives:
   - 'Deploy straight from CI with kubectl apply'
 rationale: 'CI builds only changed services, pushes their images to Harbor and commits the new image tags (commit SHAs) to the manifests, with [skip ci] preventing loops. ArgoCD picks up the commit and syncs the cluster to Git with selfHeal and prune, so Git history answers what is deployed.'
-tradeoff: 'Tag commits pile up in the history, and ArgoCD needed its own handling — leaving cluster-populated fields out of the comparison and turning on ServerSideApply for large resources (see the operations log).'
+tradeoff: 'Tag commits pile up in the history, and ArgoCD needed its own handling — leaving cluster-populated fields out of the comparison and turning on ServerSideApply in advance against the 262 KB annotation limit (see the operations log).'
 ---

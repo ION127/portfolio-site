@@ -3,7 +3,7 @@ hero:
   titleLines:
     - 'I design and run systems'
     - 'so services keep running.'
-  lead: 'Hands-on, I built and ran hybrid infrastructure linking AWS and on-prem over VPN, Kafka-based real-time pipelines and Kubernetes managed with GitOps.'
+  lead: 'I built and ran hybrid AWS–on-prem infrastructure over VPN, Kafka-based real-time pipelines and GitOps-managed Kubernetes, all hands-on.'
   miniCaption: 'The core flows of both projects play in turn'
 metrics:
   - value: '1,500'

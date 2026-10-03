@@ -6,14 +6,14 @@
 |---|---|---|---|
 | baro.period | 2026-04-14 ~ 06-29, 5인 팀, 역할 BE/DevOps | baro-team/.github `profile/README.md` | 초안 |
 | baro.my-prs | 내가 머지한 PR 128개(2026-04-24 ~ 06-26, 6개 저장소: terraform 53 · server 44 · admin 19 · edge 5 · kafka 5 · mobile 2) | GitHub 검색 `author:ION127 org:baro-team is:merged` | 초안 |
-| baro.vehicles | 동시 시뮬레이션 차량 1,500대(2026-06-25부터, 그 전에는 1,000대). 실제 1초마다(시뮬레이션 시간 3초, 3배속) 위치 전송 | baro-edge `vehicle_simulator.py` (`vehicle_count`), `config.py` (`TELEMETRY_INTERVAL` 3, `SIM_SPEED` 3) | 초안 |
+| baro.vehicles | 동시 시뮬레이션 차량 1,500대(2026-06-25부터, 2026-06-19~06-25에는 1,000대). 실제 1초마다(시뮬레이션 시간 3초, 3배속) 위치 전송 | baro-edge `vehicle_simulator.py` (`vehicle_count`), `config.py` (`TELEMETRY_INTERVAL` 3, `SIM_SPEED` 3) | 초안 |
 | baro.stands | 서울 택시승차대 254곳에서 출발 | baro-edge `config.py` (승차대 좌표) | 초안 |
-| baro.demo-speed | 데모 차량 시속 60km, 직선 이동(시뮬레이터 기본값. 실제 시뮬레이터는 배차 때 Kakao 경로 거리 ÷ 시간으로 속도를 정한다) | baro-edge `config.py` (`SIM_VEHICLE_SPEED`), `vehicle_simulator.py` | 초안 |
+| baro.demo-speed | 데모 차량 시속 60km, 직선 이동(시뮬레이터 기본값. 실제 시뮬레이터는 배차 · 재배치 명령 때 서버가 보낸 경로 거리 ÷ 시간으로 속도를 정한다) | baro-edge `config.py` (`SIM_VEHICLE_SPEED`), `vehicle_simulator.py` | 초안 |
 | baro.demo-radius | 배차 후보: 호출 지점 반경 15km 안에서 가까운 대기 차량 최대 10대, 그중 가장 가까운 차를 예약. 반경 목록(5·10·15km) 중 가장 큰 값으로 한 번 찾는다. 2026-06-15(PR #72) 전에는 반경 5km | baro-server dispatch-service `application.yml` (`idle-car-search-radii-km`), `RedisDispatchableCarProjection.findNearestIdleCars`, `DispatchRedisProperties` (`idleCarMaxCandidates`), `ConfirmDispatchService.reserveNearestIdleCar` | 초안 |
 | baro.demo-ack | ACK 10초 안에 없으면 다시 배차 | dispatch-service `application.yml` (`ack-timeout-seconds`) | 초안 |
 | baro.demo-relocation | 재배치: 반경 10km(없으면 30km) 승차대 중 0.7 × 정규화 가중치 − 0.3 × 정규화 거리 | relocation-service `RelocationService.assignRelocation` | 초안 |
 | baro.lag | Kafka consumer lag 2.9M → hot path DB 조회 제거로 해소 | baro-server PR #89 | 초안 |
-| baro.lag-rate | 메시지마다 DB 조회. 당시 차량 1,000대 × 초당 1건이라 초당 1,000회 가까이(PR #89 커밋 메시지는 333msg/sec라고 적었지만 3배속을 빼고 계산한 값) | baro-server PR #89, baro-edge `config.py` | 초안 |
+| baro.lag-rate | 메시지마다 DB 조회. 당시 차량 1,000대 × 초당 1건이라 초당 1,000회 가까이(PR #89 커밋 메시지는 333msg/sec라고 적었지만 3배속을 빼고 계산한 값으로 보인다) | baro-server PR #89, baro-edge `config.py` | 초안 |
 | baro.kafka-block | producer `max.block.ms` 60000 → 500, retries 0 | baro-server PR #103 | 초안 |
 | baro.mosquitto-queue | `max_queued_messages` 1000(기본) → 10000(PR #67) → 0(무제한, PR #88) → 몇 분 뒤 50000(PR #89, OOM 위험) | baro-terraform PR #67 · #88 · #89, baro-edge `mosquitto.conf` | 초안 |
 | baro.stagger | 10대마다 0.05초 간격 접속, IoT Core 시절 1.2초 | baro-edge `vehicle_simulator.py` | 초안 |

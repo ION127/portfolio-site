@@ -140,7 +140,7 @@ export const stockpulse: DiagramSpec = {
     {
       id: 'argocd', x: 705, y: 556,
       title: both('ArgoCD'), sub: both('selfHeal · prune'),
-      tip: { kind: 'ArgoCD · automated sync', desc: { ko: 'selfHeal · prune · ServerSideApply로 클러스터를 Git과 같게.', en: 'Keeps the cluster in sync with Git with selfHeal, prune and SSA.' } },
+      tip: { kind: 'ArgoCD · automated sync', desc: { ko: 'selfHeal · prune · ServerSideApply로 클러스터를 Git과 같게.', en: 'Keeps the cluster in sync with Git using selfHeal, prune and SSA.' } },
     },
   ],
   edges: [
@@ -223,7 +223,7 @@ export const stockpulse: DiagramSpec = {
       chapter: 2, nodes: ['detector', 'kafka'], routes: [['-bus_det']],
       text: {
         ko: 'ETF를 섹터 체온계로 씁니다. 같은 방향으로 움직인 섹터 ETF가 3개 섹터 이상이거나 같은 방향으로 움직인 섹터가 3개 이상이면 <b>MARKET</b>, 섹터 ETF 자신이거나 해당 섹터 ETF · 같은 섹터 종목이 함께 움직이면 <b>SECTOR</b>, 아니면 <b>INDIVIDUAL</b>. 결과는 <code>anomaly.detected</code>로 나갑니다.',
-        en: 'ETFs act as sector thermometers. Same-direction sector ETFs in three or more sectors, or three or more sectors moving the same way, means <b>MARKET</b>; the sector ETF itself, or the sector’s ETF or peers moving with it, means <b>SECTOR</b>; otherwise <b>INDIVIDUAL</b>. Results go out on <code>anomaly.detected</code>.',
+        en: 'ETFs act as sector thermometers. Same-direction sector ETFs in three or more sectors, or three or more sectors moving the same way, means <b>MARKET</b>; the mover being a sector ETF itself, or the sector’s ETF or peers moving with it, means <b>SECTOR</b>; otherwise <b>INDIVIDUAL</b>. Results go out on <code>anomaly.detected</code>.',
       },
       facts: ['INDIVIDUAL', 'SECTOR', 'MARKET'],
     },
@@ -231,7 +231,7 @@ export const stockpulse: DiagramSpec = {
       chapter: 3, nodes: ['kafka', 'news', 'newsapi'], routes: [['k3', 'bus_news'], ['news_api'], ['-bus_news']],
       text: {
         ko: 'news-fetcher가 <code>anomaly.detected</code>를 받아, 영문은 티커와 섹터 키워드로 NewsAPI(최근 3일) · Google News에서, 한글은 섹터 키워드로 Naver · Google News RSS에서 언어별로 최대 4건을 모아 <code>news.fetched</code>로 보냅니다.',
-        en: 'news-fetcher consumes <code>anomaly.detected</code> and gathers up to four articles per language — English by the ticker and sector keywords from NewsAPI (last three days) and Google News, Korean by sector keywords from Naver and Google News RSS — then publishes <code>news.fetched</code>.',
+        en: 'news-fetcher consumes <code>anomaly.detected</code> and gathers up to four articles per language: English articles from NewsAPI (last three days) and Google News, searched by ticker and sector keywords, and Korean articles from Naver and Google News RSS, searched by sector keywords. It then publishes <code>news.fetched</code>.',
       },
       facts: ['anomaly.detected', 'news.fetched'],
     },

@@ -13,5 +13,5 @@ GitHub Actions on a self-hosted runner maps changed paths to services and builds
 
 ### Retention and cost
 
-- Two weekly CronJobs watch NFS usage (warning at 80%) and rewrite the Redis AOF.
+- Two weekly CronJobs handle NFS usage checks (warning at 80%) and Redis AOF rewrites respectively.
 - Kafka retention is capped at 7 days or 15 GiB per partition, whichever comes first.

@@ -24,7 +24,7 @@ export interface RoadData {
   scale: number;
   /** 교차로 [위도, 경도] × scale. 첫 교차로는 절대값, 이후는 앞 교차로와의 차이 */
   nodes: number[];
-  /** 간선 [a, b, oneway] 묶음. oneway가 1이면 a → b로만 간다 */
+  /** 간선 [a, b, flags] 묶음. flags: 1 = a → b로만 가는 일방통행, 2 = 자동차 전용(motorway · trunk와 각 진입로) */
   edges: number[];
   /** 간선마다 a와 b 사이 점들. 앞 점(처음은 a)과의 차이로 저장한다 */
   geometry: number[][];
@@ -49,6 +49,7 @@ export interface BuildStats {
 type Pt = [number, number];
 
 const ROAD_CLASSES = new Set(['motorway', 'trunk', 'primary', 'secondary', 'tertiary']);
+const FAST_CLASSES = new Set(['motorway', 'trunk']);
 const RAD = Math.PI / 180;
 // 서울 위도의 1도당 미터(평면 근사, 단순화에만 쓴다)
 const M_PER_DEG_LAT = 110_540;
@@ -56,6 +57,10 @@ const M_PER_DEG_LNG = 111_320 * Math.cos(37.55 * RAD);
 
 export const isRoad = (highway: string | undefined): boolean =>
   highway !== undefined && ROAD_CLASSES.has(highway.replace(/_link$/, ''));
+
+/** 자동차 전용 도로. 출발 · 도착점을 이런 길에만 걸린 교차로에 붙이면 멀리 돌아가게 된다. */
+export const isFast = (highway: string | undefined): boolean =>
+  highway !== undefined && FAST_CLASSES.has(highway.replace(/_link$/, ''));
 
 /** 1: 길 방향으로만, -1: 반대로만, 0: 양방향 */
 export function direction(tags: Record<string, string>): -1 | 0 | 1 {
@@ -105,6 +110,7 @@ interface RawEdge {
   a: number;
   b: number;
   oneway: 0 | 1;
+  fast: 0 | 1;
   points: Pt[];
 }
 
@@ -202,6 +208,7 @@ export function buildRoadGraph(elements: readonly OsmElement[], options: BuildOp
   for (const w of ways) {
     if (w.nodes.length < 2 || w.nodes.some((id) => !coord.has(id))) continue;
     const dir = direction(w.tags ?? {});
+    const fast = isFast(w.tags?.highway) ? 1 : 0;
     let start = 0;
     for (let i = 1; i < w.nodes.length; i++) {
       if (i < w.nodes.length - 1 && uses.get(w.nodes[i]!) === 1) continue;
@@ -215,7 +222,7 @@ export function buildRoadGraph(elements: readonly OsmElement[], options: BuildOp
         [a, b] = [b, a];
         points = points.reverse();
       }
-      raw.push({ a, b, oneway: dir === 0 ? 0 : 1, points });
+      raw.push({ a, b, oneway: dir === 0 ? 0 : 1, fast, points });
     }
   }
   const inBig = largestStrongComponent(ids.length, raw);
@@ -239,7 +246,7 @@ export function buildRoadGraph(elements: readonly OsmElement[], options: BuildOp
   const geometry: number[][] = [];
   let points = 0;
   for (const e of kept) {
-    edges.push(renumber.get(e.a)!, renumber.get(e.b)!, e.oneway);
+    edges.push(renumber.get(e.a)!, renumber.get(e.b)!, e.oneway | (e.fast << 1));
     const inner = simplify(e.points, tolerance).slice(1, -1);
     const g: number[] = [];
     let ly = q(e.points[0]![0]);

@@ -57,6 +57,20 @@ describe('road graph build', () => {
     expect(triples).not.toContainEqual([0, 1, 1]);
   });
 
+  it('marks motorway and trunk edges as fast roads in the flags', () => {
+    const elements = [
+      node(1, 37.5, 127.0),
+      node(2, 37.5, 127.01),
+      node(3, 37.51, 127.01),
+      way(10, [1, 2], { highway: 'trunk' }),
+      way(11, [2, 3], { highway: 'primary' }),
+      way(12, [3, 1], { highway: 'motorway_link', oneway: 'no' }),
+    ];
+    const { data } = buildRoadGraph(elements, { tolerance: 0 });
+    // 플래그: 1 = 일방통행, 2 = 자동차 전용(motorway · trunk와 각 진입로)
+    expect(data.edges.filter((_, i) => i % 3 === 2).sort()).toEqual([0, 2, 2]);
+  });
+
   it('drops non-road ways and pieces that cannot be reached both ways', () => {
     const elements = [
       node(1, 37.5, 127.0),

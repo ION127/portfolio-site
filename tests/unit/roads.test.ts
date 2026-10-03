@@ -76,6 +76,30 @@ describe('road routing', () => {
     }
   });
 
+  it('does not snap a point onto a junction that only motorways or trunk roads touch', () => {
+    // 고속도로 교차로(m)가 더 가깝지만, 일반 도로 교차로(l)에 붙어야 멀리 돌아가지 않는다.
+    const p = { lat: 37.5, lng: 127.0 };
+    const m = { lat: 37.5009, lng: 127.0 };
+    const m2 = { lat: 37.5009, lng: 127.02 };
+    const l = { lat: 37.4985, lng: 127.0 };
+    const l2 = { lat: 37.4985, lng: 127.02 };
+    const roads = decodeRoads(
+      buildRoadGraph(
+        [
+          { type: 'node', id: 1, lat: m.lat, lon: m.lng },
+          { type: 'node', id: 2, lat: m2.lat, lon: m2.lng },
+          { type: 'node', id: 3, lat: l.lat, lon: l.lng },
+          { type: 'node', id: 4, lat: l2.lat, lon: l2.lng },
+          { type: 'way', id: 10, nodes: [1, 2], tags: { highway: 'motorway', oneway: 'no' } },
+          { type: 'way', id: 11, nodes: [3, 4], tags: { highway: 'tertiary' } },
+          { type: 'way', id: 12, nodes: [4, 2], tags: { highway: 'motorway_link', oneway: 'no' } },
+        ],
+        { tolerance: 0 },
+      ).data,
+    );
+    expect(near(roads.nodePos(roads.nearestNode(p)), l)).toBe(true);
+  });
+
   it('keeps searching outward until no unseen cell can hold a closer junction', () => {
     // 대각선 옆 칸의 먼 교차로(x)보다 두 칸 옆의 가까운 교차로(y)를 골라야 한다.
     const p = { lat: 37.50005, lng: 127.00005 };

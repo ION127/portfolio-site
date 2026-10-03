@@ -12,6 +12,7 @@
     "test:e2e": "npm run build && playwright test --project=default",
     "test:visual": "npm run build && playwright test --project=visual",
     "og": "node scripts/og.mjs",
+    "roads": "node scripts/build-roads.mjs",
     "lighthouse": "npm run build && node scripts/lighthouse.mjs"
   },
   "dependencies": {

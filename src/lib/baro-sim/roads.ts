@@ -6,6 +6,7 @@ export interface RoadNetwork {
   readonly nodeCount: number;
   readonly attribution: string;
   nodePos(i: number): LatLng;
+  /** 일반 도로가 닿는 교차로 중 p에서 가장 가까운 곳 */
   nearestNode(p: LatLng): number;
   /** from에서 to까지 도로를 따라가는 지점 목록(from은 빼고 to는 넣는다). 교차로끼리 이어져 있지 않으면 null */
   route(from: LatLng, to: LatLng): LatLng[] | null;
@@ -44,10 +45,11 @@ export function decodeRoads(data: RoadData): RoadNetwork {
   const shapes: Float64Array[] = new Array<Float64Array>(m);
   const lengths = new Float64Array(m);
   const start = new Int32Array(n + 1);
+  const snappable = new Uint8Array(n);
   for (let e = 0; e < m; e++) {
     const a = data.edges[3 * e]!;
     const b = data.edges[3 * e + 1]!;
-    const oneway = data.edges[3 * e + 2]!;
+    const flags = data.edges[3 * e + 2]!;
     const g = data.geometry[e] ?? [];
     const shape = new Float64Array(g.length + 4);
     shape[0] = lat[a]!;
@@ -69,7 +71,12 @@ export function decodeRoads(data: RoadData): RoadNetwork {
     shapes[e] = shape;
     lengths[e] = len;
     start[a + 1] = start[a + 1]! + 1;
-    if (oneway === 0) start[b + 1] = start[b + 1]! + 1;
+    if ((flags & 1) === 0) start[b + 1] = start[b + 1]! + 1;
+    // 일반 도로가 하나라도 닿는 교차로만 출발 · 도착점을 붙일 후보로 둔다.
+    if ((flags & 2) === 0) {
+      snappable[a] = 1;
+      snappable[b] = 1;
+    }
   }
   for (let i = 0; i < n; i++) start[i + 1] = start[i + 1]! + start[i]!;
 
@@ -94,15 +101,17 @@ export function decodeRoads(data: RoadData): RoadNetwork {
     const a = data.edges[3 * e]!;
     const b = data.edges[3 * e + 1]!;
     addArc(a, b, e, 0);
-    if (data.edges[3 * e + 2] === 0) addArc(b, a, e, 1);
+    if ((data.edges[3 * e + 2]! & 1) === 0) addArc(b, a, e, 1);
   }
 
-  // 최근접 교차로: 0.005도 격자
+  // 출발 · 도착점을 붙일 교차로(일반 도로가 닿는 곳) 찾기: 0.005도 격자
+  if (!snappable.includes(1)) snappable.fill(1);
   const grid = new Map<number, number[]>();
   const cellY = (la: number) => Math.floor(la / CELL_DEG);
   const cellX = (ln: number) => Math.floor(ln / CELL_DEG);
   const cellKey = (cy: number, cx: number) => cy * 100_000 + cx;
   for (let i = 0; i < n; i++) {
+    if (snappable[i] === 0) continue;
     const k = cellKey(cellY(lat[i]!), cellX(lng[i]!));
     const list = grid.get(k);
     if (list) list.push(i);

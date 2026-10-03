@@ -13,6 +13,7 @@
 | baro.demo-ack | ACK 10초 안에 없으면 다시 배차 | dispatch-service `application.yml` (`ack-timeout-seconds`) | 초안 |
 | baro.demo-relocation | 재배치: 반경 10km(없으면 30km) 승차대 중 0.7 × 정규화 가중치 − 0.3 × 정규화 거리 | relocation-service `RelocationService.assignRelocation` | 초안 |
 | baro.lag | Kafka consumer lag 2.9M → hot path DB 조회 제거로 해소 | baro-server PR #89 | 초안 |
+| baro.vpn-table220 | StrongSwan(charon)이 table 220에 넣은 policy route가 main table보다 먼저 적용돼 AWS 대역 트래픽이 VTI 대신 Wi-Fi 기본 경로로 나감. 호스트 VPN 스크립트가 터널 상태 변경 때 충돌 경로 제거 | baro-team 내부 문서 `docs/network-vpn.md`(Table 220 충돌) | 초안 |
 | baro.lag-rate | 메시지마다 DB 조회. 당시 차량 1,000대 × 초당 1건이라 초당 1,000회 가까이(PR #89 커밋 메시지는 333msg/sec라고 적었지만 3배속을 빼고 계산한 값으로 보인다) | baro-server PR #89, baro-edge `config.py` | 초안 |
 | baro.kafka-block | producer `max.block.ms` 60000 → 500, retries 0 | baro-server PR #103 | 초안 |
 | baro.mosquitto-queue | `max_queued_messages` 1000(기본) → 10000(PR #67) → 0(무제한, PR #88) → 몇 분 뒤 50000(PR #89, OOM 위험) | baro-terraform PR #67 · #88 · #89, baro-edge `mosquitto.conf` | 초안 |
@@ -26,6 +27,7 @@
 | baro.iot-core-switch | IoT Core → EC2 Mosquitto 전환 (2026-06-16) | baro-terraform PR #44 | 초안 |
 | baro.kafka-ec2 | Kafka ECS+EFS → EC2+EBS 이전 (2026-06-04) | baro-terraform `ec2-kafka.tf` | 초안 |
 | stockpulse.tickers | 추적 종목 108개 (미국 68 + 한국 40) | StockPulse `core/stock_categories.py` | 초안 |
+| stockpulse.minute-path | 분봉 스트리밍 탐지는 신호를 내지 못한다: 한국은 메시지당 종목별 봉 1개(탐지는 2개 미만이면 건너뜀), 미국은 tz를 뗀 ET 시각을 UTC 컨테이너 시계와 비교해 최근 5분 필터에서 탈락. 실제 신호는 api의 매시간 일봉 경로. 사이트에는 회고로만 쓴다 | StockPulse `services/kis-bridge/main.py`(`_flush_candles`), `services/anomaly-detector/main.py`, `core/stock_fetcher.py`(`detect_anomalies`, tz_localize), `services/api/main.py`(APScheduler) | 초안 |
 | stockpulse.sectors | 10개 섹터, 섹터마다 미국 ETF 2 · 종목 5, 한국 ETF 1 · 종목 3(AMZN · TSLA는 두 섹터에 중복) | StockPulse `core/stock_categories.py` | 초안 |
 | stockpulse.detect | 이상값: 1분 등락률 미국 3.0% · 한국 4.0% 이상 또는 Z-score 2.0 이상(최근 20개 봉, 둘 중 하나) | StockPulse `k8s/configmap.yaml`(`ANOMALY_THRESHOLD_PERCENT`, `ANOMALY_ZSCORE_THRESHOLD`), `core/stock_fetcher.detect_anomalies` | 초안 |
 | stockpulse.classify | 분류: 같은 방향 섹터 ETF 3개 섹터 이상 또는 움직인 섹터 3개 이상 → 시장, ETF 자신 · 자기 섹터 ETF · 같은 섹터 종목 1개 이상 → 업종, 나머지 → 개별 | StockPulse `core/stock_fetcher.classify_event_type` | 초안 |

@@ -13,7 +13,10 @@ test.describe('home (ko)', () => {
     await expect(page.locator('#ops .incident')).toHaveCount(3);
     await expect(page.locator('#ops .incident .tag')).toHaveText(['BARO', 'BARO', 'StockPulse']);
     await expect(page.locator('.stack .grp')).toHaveCount(6);
-    await expect(page.locator('#about .pending')).toBeVisible();
+    await expect(page.locator('#about .pending')).toHaveCount(0);
+    await expect(page.locator('#about p')).toHaveCount(3);
+    await expect(page.locator('#about a[href="mailto:ion011227@gmail.com"]')).toBeVisible();
+    await expect(page.locator('.hero a[href="mailto:ion011227@gmail.com"]')).toBeVisible();
     expect(errors).toEqual([]);
   });
 

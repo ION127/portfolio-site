@@ -1,5 +1,5 @@
 export const SITE = {
-  author: { ko: '신중훈', en: 'Joong Hoon Shin' },
+  author: { ko: '신중훈', en: 'Shin JoongHoon' },
   githubUrl: 'https://github.com/ION127',
 } as const;
 

@@ -18,6 +18,6 @@ describe('site constants', () => {
   it('has unique project slugs and both author names', () => {
     expect(new Set(PROJECT_SLUGS).size).toBe(PROJECT_SLUGS.length);
     expect(SITE.author.ko).toBe('신중훈');
-    expect(SITE.author.en).toBe('Joong Hoon Shin');
+    expect(SITE.author.en).toBe('Shin JoongHoon');
   });
 });

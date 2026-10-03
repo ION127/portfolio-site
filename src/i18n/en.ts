@@ -1,9 +1,9 @@
 import type { ko } from './ko';
 
 export const en: Record<keyof typeof ko, string> = {
-  'meta.siteTitle': 'Joong Hoon Shin — Cloud/Infra Engineer',
+  'meta.siteTitle': 'Shin JoongHoon — Cloud/Infra Engineer',
   'meta.siteDescription':
-    'Portfolio of Joong Hoon Shin, who has designed and run hybrid AWS–on-prem infrastructure, real-time Kafka pipelines and GitOps-managed Kubernetes.',
+    'Portfolio of Shin JoongHoon, who has designed and run hybrid AWS–on-prem infrastructure, real-time Kafka pipelines and GitOps-managed Kubernetes.',
   'a11y.skip': 'Skip to content',
   'nav.label': 'Main menu',
   'nav.projects': 'Projects',

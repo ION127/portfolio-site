@@ -1,5 +1,5 @@
 ---
 ---
-When a stock suddenly spikes or plunges during market hours, the first thing an investor wants to know is why. StockPulse watches 1-minute bars for 68 US and 40 Korean tickers, and when a sharp move appears it first decides **whether the move belongs to one stock, a whole sector or the entire market**. It then gathers related news, has an LLM explain the cause in Korean and English, and delivers it to a dashboard and Slack.
+When a stock suddenly spikes or plunges during market hours, the first thing an investor wants to know is why. StockPulse watches prices for 68 US and 40 Korean tickers, and when a sharp move appears it first decides **whether the move belongs to one stock, a whole sector or the entire market**. It then gathers related news, has an LLM explain the cause in Korean and English, and delivers it to a dashboard and Slack.
 
 It is an event-driven design: from ingestion to alerts, seven services are connected by seven Kafka topics (two of them DLQs), with a Next.js dashboard on top. It runs on an on-prem Kubernetes cluster, deployed with ArgoCD GitOps. It is a solo project I designed, built and ran myself.

@@ -68,7 +68,7 @@ export function direction(tags: Record<string, string>): -1 | 0 | 1 {
   if (oneway === 'no') return 0;
   if (oneway === '-1') return -1;
   if (oneway === 'yes' || oneway === '1' || oneway === 'true') return 1;
-  if (tags.junction === 'roundabout' || tags.highway === 'motorway') return 1;
+  if (tags.junction === 'roundabout' || tags.junction === 'circular' || tags.highway === 'motorway') return 1;
   return 0;
 }
 

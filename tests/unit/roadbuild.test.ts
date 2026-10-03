@@ -35,6 +35,7 @@ describe('road graph build', () => {
     expect(direction({ highway: 'motorway' })).toBe(1);
     expect(direction({ highway: 'motorway', oneway: 'no' })).toBe(0);
     expect(direction({ highway: 'secondary', junction: 'roundabout' })).toBe(1);
+    expect(direction({ highway: 'tertiary', junction: 'circular' })).toBe(1);
   });
 
   it('keeps only motorway to tertiary roads and their links', () => {

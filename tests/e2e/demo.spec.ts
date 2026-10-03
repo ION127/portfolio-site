@@ -74,6 +74,14 @@ test.describe('BARO dispatch demo', () => {
     await expect(page.locator('.barosim')).toHaveAttribute('data-roads', 'on');
   });
 
+  test('falls back to straight lines when the road data never answers', async ({ page }) => {
+    await page.route('**/seoul-roads*.json', () => {
+      // 응답하지 않는 요청
+    });
+    await openDemo(page);
+    await expect(page.locator('.barosim')).toHaveAttribute('data-roads', 'off');
+  });
+
   test('keeps running in straight lines when the road data cannot load', async ({ page }) => {
     await page.route('**/seoul-roads*.json', (route) => route.fulfill({ status: 404, body: '' }));
     await openDemo(page);

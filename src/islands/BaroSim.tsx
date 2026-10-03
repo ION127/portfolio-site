@@ -93,7 +93,8 @@ export default function BaroSim({ locale, seed }: Props) {
     void (async () => {
       const loadRoads = async (): Promise<RoadNetwork | null> => {
         try {
-          const res = await fetch(roadsUrl);
+          // 응답이 멈춰도 데모가 기다리기만 하지 않게 8초 뒤에는 직선으로 시작한다.
+          const res = await fetch(roadsUrl, { signal: AbortSignal.timeout(8_000) });
           return res.ok ? decodeRoads((await res.json()) as RoadData) : null;
         } catch {
           return null;

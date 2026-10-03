@@ -4,3 +4,4 @@ Known limitations, and what I would change next time.
 
 - **In-memory state blocks horizontal scaling.** The control service’s vehicle state, the dispatch service’s pending-ACK list and SSE connections all live in JVM memory, so adding instances splits the state. Moving this state to a shared store such as Redis, or to pub/sub, is the next step.
 - **Single points of failure remain.** Kafka runs on one broker (RF=1), there is one NAT gateway, and RDS is single-AZ. That was a cost-first choice; production would need three brokers, a NAT per AZ and Multi-AZ RDS.
+- **Service-to-service trust rests on the network alone.** Calls between services travel only over Cloud Map internal addresses but carry no authentication, and every service shares a single RDS master account. Service-to-service authentication and per-service database accounts are the next step.

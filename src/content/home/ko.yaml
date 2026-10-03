@@ -23,7 +23,7 @@ metrics:
     factId: stockpulse.workloads
   - value: '108'
     unit: '종목'
-    lines: ['한 · 미 1분봉을', '실시간 이상 탐지']
+    lines: ['한 · 미 종목을 추적하는', '이상 탐지 파이프라인']
     project: stockpulse
     factId: stockpulse.tickers
 stack:
@@ -40,8 +40,13 @@ stack:
   - group: 'Backend'
     items: ['Kotlin', 'Spring Boot', 'Python', 'FastAPI', 'TypeScript', 'Next.js']
 about:
-  body: ''
+  body: |
+    AWS와 온프레미스를 오가며 인프라를 직접 만들고 운영해 왔습니다. 현대오토에버 모빌리티 SW스쿨 3기 클라우드 과정의 팀 프로젝트 BARO에서는 백엔드와 DevOps를 맡아, ECS · Terraform으로 꾸린 AWS와 OpenStack K3s 온프레미스를 Site-to-Site VPN으로 잇는 구조에서 일했습니다. 차량 시뮬레이션 규모를 늘리며 생긴 Kafka consumer lag, Mosquitto 큐 한도 같은 문제를 원인부터 추적해 고쳤습니다.
+
+    개인 프로젝트 StockPulse는 설계부터 운영까지 혼자 했습니다. 온프레미스 쿠버네티스에 Kafka 기반 파이프라인을 올리고, ArgoCD와 Sealed Secrets로 Git에 커밋하면 배포되는 흐름을 만들었습니다.
+
+    문제가 생기면 추측보다 로그 · 메트릭 · 코드로 원인을 확인하고, 고친 뒤에는 같은 일이 반복되지 않게 설정과 절차로 남깁니다. 잘 되지 않은 부분도 각 프로젝트의 한계 · 회고에 그대로 적었습니다. 이 사이트 역시 S3 · CloudFront를 Terraform으로 만들고 GitHub Actions(OIDC)로 배포합니다.
 contacts:
   github: 'https://github.com/ION127'
-  email: ''
+  email: 'ion011227@gmail.com'
   resume: ''

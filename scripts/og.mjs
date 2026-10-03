@@ -13,7 +13,7 @@ const font = readFileSync(
 
 const variants = {
   ko: { name: '신중훈', role: 'CLOUD / INFRA ENGINEER', line: '서비스가 멈추지 않도록 설계하고, 운영합니다.' },
-  en: { name: 'Joong Hoon Shin', role: 'CLOUD / INFRA ENGINEER', line: 'I design and run services that keep running.' },
+  en: { name: 'Shin JoongHoon', role: 'CLOUD / INFRA ENGINEER', line: 'I design and run systems so services keep running.' },
 };
 
 const browser = await chromium.launch({ channel: 'chrome' });

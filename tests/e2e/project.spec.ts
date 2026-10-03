@@ -42,7 +42,8 @@ test.describe('BARO case study (ko)', () => {
 
   test('lists incidents, decisions and prose in their sections', async ({ page }) => {
     await page.goto('/projects/baro/');
-    await expect(page.locator('#ops .incident')).toHaveCount(3);
+    await expect(page.locator('#ops .incident')).toHaveCount(4);
+    await expect(page.locator('#incident-baro-vpn-table220 h3')).toHaveText('VPN 터널은 살아 있는데 AWS로 가는 트래픽이 사라졌다');
     await expect(page.locator('#ops .incident').first().locator('h3')).toHaveText('Kafka가 멈추자 관제 화면도 멈췄다');
     await expect(page.locator('#incident-baro-kafka-block')).toBeVisible();
     await expect(page.locator('#decisions .decision')).toHaveCount(6);

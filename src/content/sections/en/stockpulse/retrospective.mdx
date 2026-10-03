@@ -2,8 +2,10 @@
 ---
 Known limitations, and what I would change next time.
 
+- **Minute-bar streaming detection never actually fires.** For Korean bars, kis-bridge sends one bar per ticker per message, while the detector looks at one message at a time and skips any ticker with fewer than two bars. For US bars, New York wall-clock times with the time zone stripped are compared against the UTC container clock, so the “last 5 minutes” filter drops them. The signals that piled up came, in effect, from the daily-bar path the api runs every hour. The first fix is to have the detector keep recent bars per ticker as state and to normalize times to UTC.
 - **The API is effectively a single instance.** WebSocket connections are tracked in process memory, so running several API replicas means some browsers miss alerts. The HPA allows up to three, but it has to stay at one until broadcasts move to Redis pub/sub.
 - **CI has no tests.** The pipeline builds only what changed, but there is no test stage before the build, so regressions have to be caught manually.
-- **Partition counts were never set explicitly.** Topics are left to auto-creation, so adding consumers yields only limited parallelism.
+- **Partition counts and replication factors were never set.** Topics are left to auto-creation, so adding consumers yields only limited parallelism, and application topics use the default replication factor (1) even with three brokers.
+- **The retention policies never reach the real tables.** I wrote policies for compression after a day and 30-day price / 90-day analysis retention, plus cleanup CronJobs, but the table names they target differ from the tables the app creates, so nothing is actually compressed or dropped. Re-pointing the policies at the app’s tables comes first.
 - **Gaps in observability.** ai-analyzer is listed as a scrape target but exposes no metrics endpoint, kafka-exporter isn’t deployed so the Kafka lag panel may be empty, and Redis is deployed but unused.
 - **CronJob time zone.** The jobs set `timeZone: Asia/Seoul` but their schedules were written in UTC, so all six training and maintenance CronJobs run nine hours earlier than intended.

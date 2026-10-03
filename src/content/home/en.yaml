@@ -23,7 +23,7 @@ metrics:
     factId: stockpulse.workloads
   - value: '108'
     unit: ''
-    lines: ['Korean and US tickers', 'watched minute by minute']
+    lines: ['Korean and US tickers', 'tracked by the anomaly pipeline']
     project: stockpulse
     factId: stockpulse.tickers
 stack:
@@ -40,8 +40,13 @@ stack:
   - group: 'Backend'
     items: ['Kotlin', 'Spring Boot', 'Python', 'FastAPI', 'TypeScript', 'Next.js']
 about:
-  body: ''
+  body: |
+    I have built and run infrastructure across AWS and on-prem, hands-on. In BARO, the team project for the cloud track of Hyundai AutoEver’s Mobility SW School (cohort 3), my role was backend and DevOps, working on a hybrid setup that links AWS (ECS, Terraform) and an on-prem OpenStack K3s cluster over a Site-to-Site VPN. As we scaled up the vehicle simulation, I traced problems such as Kafka consumer lag and Mosquitto queue limits back to their causes and fixed them.
+
+    StockPulse is a solo project I took from design to operations. I put a Kafka-based pipeline on an on-prem Kubernetes cluster and set up a GitOps flow with ArgoCD and Sealed Secrets, where a commit to Git becomes a deploy.
+
+    When something breaks, I confirm the cause in logs, metrics and code rather than guessing, and once it is fixed I capture the fix in configuration and procedures so it does not happen again. What didn’t work is written down in each project’s limitations and retrospective, too. This site itself runs on S3 and CloudFront built with Terraform and deploys through GitHub Actions (OIDC).
 contacts:
   github: 'https://github.com/ION127'
-  email: ''
+  email: 'ion011227@gmail.com'
   resume: ''

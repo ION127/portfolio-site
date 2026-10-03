@@ -54,16 +54,12 @@ AWS S3 + CloudFront 정적 호스팅. 인프라는 Terraform(`infra/`), 배포�
 
 확인이 끝난 항목은 해당 파일의 `confirmed: true`나 `docs/facts.md`의 `확정`으로 표시한다.
 
-1. StockPulse 기간: 사이트에 표시하지 않는다. 다시 넣으려면 `projects/{ko,en}/stockpulse.yaml`에 `period`를 적는다.
-2. 공개할 이메일 → `home/{ko,en}.yaml`의 `contacts.email`. 비어 있으면 버튼이 숨겨진다.
-3. 이력서 링크 → `contacts.resume`. 선택 사항이다.
-4. 운영 기록 7건의 실제 경위·수치. 특히 StockPulse 4건은 코드 주석에서 추정한 초안이다.
-5. 설계 결정 12건의 배경과 대안
-6. 홈 숫자 4개: `docs/facts.md`의 `확인` 열
-7. 한계·회고 섹션을 공개할지와 그 범위
-8. **내 기여** 본문: PR·커밋 기록으로 쓴 초안(`contribution.mdx`)을 검토한다. 협업으로 기여한 부분은 기록에 없으니 보탠다.
-9. **소개 글**: `home/{ko,en}.yaml`의 `about.body`. 문단은 빈 줄로 구분한다.
-10. 영어 이름 표기: 현재 `Joong Hoon Shin`(git 작성자 이름 기준)
-11. 영어 번역 전체 검토
-12. BARO 운영 기록 후보 "StrongSwan VTI routing table 220 충돌": 경위를 알려주면 추가한다.
-13. StockPulse를 "혼자 설계하고 만들고 운영한 개인 프로젝트"로 소개하는 표현
+정해진 것: 공개 이메일(`home/{ko,en}.yaml`의 `contacts.email`), 영어 이름 표기 `Shin JoongHoon`, 이력서 링크는 두지 않음(사이트가 이력서 역할), StockPulse 기간은 표시하지 않음, 한계 · 회고에는 원본에서 확인한 결함까지 공개, StrongSwan table 220 운영 기록은 팀 네트워크 문서로 작성.
+
+남은 확인:
+
+1. **소개 글**(`home/{ko,en}.yaml`의 `about.body`): 초안을 검토한다. 문단은 빈 줄로 구분한다.
+2. **내 기여**(`contribution.mdx`): PR · 커밋 기록으로 쓴 초안이다. 협업으로 기여한 부분은 기록에 없으니 보탠다.
+3. **원본으로 확인하지 못한 주장**: consumer lag "해소"(측정 기록 없음), 초당 조회 수(커밋 333회 vs 코드 기준 1,000회), Kafka EC2 이전의 대안(MSK) · 이유, IoT Core 비용 비례, Kafka 장애 때 "MQTT 수신과 관제 화면은 계속 동작", StockPulse 메시지 크기 한도 실제 초과 여부, 서비스 링크 문제가 실제 장애였는지.
+4. 홈 숫자 4개: `docs/facts.md`의 `확인` 열
+5. StockPulse를 "혼자 설계하고 만들고 운영한 개인 프로젝트"로 소개하는 표현

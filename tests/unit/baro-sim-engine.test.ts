@@ -209,6 +209,23 @@ describe('with a road network', () => {
     expect(Math.abs(ticks - expected)).toBeLessThanOrEqual(2);
   });
 
+  it('clears the route of a relocating car the moment another request reserves it', () => {
+    const roads = gridRoads();
+    const sim = createSim({ seed: 1, vehiclePositions: [gridPoint(0, 0)], stands: [gridPoint(2, 2)], callsPerMinute: 0, roads });
+    const car = sim.vehicles[0]!;
+    sim.dispatch(sim.addCall(gridPoint(0, 0), gridPoint(0, 2), { manual: true }));
+    for (let i = 0; i < 2_000 && car.state !== 'relocating'; i++) sim.step(1);
+    expect(car.state).toBe('relocating');
+    sim.step(5);
+    sim.dispatch(sim.addCall(car.pos, gridPoint(2, 0), { manual: true }));
+    expect(car.state).toBe('reserved');
+    expect(car.target).toBeNull();
+    expect(car.route).toEqual([]);
+    const at = { ...car.pos };
+    sim.step(0.5);
+    expect(car.pos).toEqual(at);
+  });
+
   it('keeps driving in straight lines without road data', () => {
     const sim = createSim({ seed: 1, vehiclePositions: [gridPoint(0, 0)], stands: [gridPoint(0, 0)], callsPerMinute: 0 });
     const car = sim.vehicles[0]!;

@@ -20,7 +20,10 @@ const RAD = Math.PI / 180;
 // 평면 근사(최근접 탐색 · 휴리스틱용). 위도 1도는 하버사인 기준(약 111.2km)보다 작게 잡아 거리를 넘겨 보지 않는다.
 const M_PER_DEG_LAT = 110_540;
 const M_PER_DEG_LNG = 111_320 * Math.cos(37.55 * RAD);
-/** A* 휴리스틱이 실제 도로 거리를 넘지 않도록 조금 줄인다. */
+/**
+ * A* 휴리스틱이 실제 도로 거리를 넘지 않도록 조금 줄인다. 경도 1도 미터값을 위도 37.55도로 고정했으므로
+ * 이 여유(1%)는 데이터 범위가 그 위도에서 ±1도 안일 때만 성립한다(지금 범위 37.44–37.68).
+ */
 const H_FACTOR = 0.99;
 
 export function decodeRoads(data: RoadData): RoadNetwork {
@@ -125,6 +128,7 @@ export function decodeRoads(data: RoadData): RoadNetwork {
   const cellM = CELL_DEG * Math.min(M_PER_DEG_LAT, M_PER_DEG_LNG);
 
   function nearestNode(p: LatLng): number {
+    if (grid.size === 0) return -1;
     const cy = cellY(p.lat);
     const cx = cellX(p.lng);
     let best = -1;
@@ -252,6 +256,7 @@ export function decodeRoads(data: RoadData): RoadNetwork {
     if (haversineMeters(from, to) < DIRECT_M) return [to];
     const s = nearestNode(from);
     const t = nearestNode(to);
+    if (s < 0 || t < 0) return null;
     if (s === t) return [to];
     const key = s * n + t;
     let mid = cache.get(key);
@@ -266,6 +271,7 @@ export function decodeRoads(data: RoadData): RoadNetwork {
       if (cache.size > CACHE_SIZE) cache.delete(cache.keys().next().value!);
     }
     // 캐시한 배열을 그대로 내주지 않는다(엔진이 들고 있는 동안 다른 차와 섞이지 않게).
+    // 안의 지점 객체는 캐시와 함께 쓰므로 바꾸지 않는다(엔진은 위치를 복사해 쓴다).
     return [...mid, to];
   }
 

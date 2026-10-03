@@ -89,17 +89,22 @@ test.describe('BARO dispatch demo', () => {
       document.addEventListener('securitypolicyviolation', (e) => seen.push(`${e.effectiveDirective} ${e.blockedURI}`));
     });
     await openDemo(page);
-    // 차 위에 마우스를 올려 툴팁(위치를 style로 정하는 요소)까지 띄운다.
+    // 차 위에 마우스를 올려 툴팁(위치를 style로 정하는 요소)까지 띄운다. 캔버스에서 불투명한 점(차)의 위치를 찾는다.
     const canvas = page.locator('.bs-canvas');
-    const box = (await canvas.boundingBox())!;
-    let shown = false;
-    for (let y = box.height * 0.3; y < box.height * 0.7 && !shown; y += 10) {
-      for (let x = box.width * 0.3; x < box.width * 0.7 && !shown; x += 10) {
-        await canvas.hover({ position: { x, y } });
-        shown = await page.locator('.bs-tip').isVisible();
-      }
-    }
-    expect(shown).toBe(true);
+    const findCar = () =>
+      canvas.evaluate((c: HTMLCanvasElement) => {
+        const { data, width, height } = c.getContext('2d')!.getImageData(0, 0, c.width, c.height);
+        const dpr = c.width / c.getBoundingClientRect().width;
+        for (let y = Math.floor(height * 0.3); y < height * 0.7; y += 2) {
+          for (let x = Math.floor(width * 0.3); x < width * 0.7; x += 2) {
+            if (data[(y * width + x) * 4 + 3]! >= 200) return { x: x / dpr, y: y / dpr };
+          }
+        }
+        return null;
+      });
+    await expect.poll(findCar).not.toBeNull();
+    await canvas.hover({ position: (await findCar())! });
+    await expect(page.locator('.bs-tip')).toBeVisible();
     await expect(page.locator('.barosim')).toHaveAttribute('data-phase', 'reserve', { timeout: 25_000 });
     expect(await page.evaluate(() => (window as unknown as { __csp: string[] }).__csp)).toEqual([]);
   });

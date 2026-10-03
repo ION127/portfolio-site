@@ -40,6 +40,10 @@ const pending = t(locale, 'section.pending');
 const spec = DIAGRAMS[p.diagram];
 if (spec) assertValidSpec(spec);
 const hasDiagram = spec !== undefined;
+// 프로젝트가 늘었는데 데모를 정하지 않으면 타입 검사에서 걸리게 한다.
+function noDemoFor(missing: never): never {
+  throw new Error(`no demo for ${String(missing)}`);
+}
 ---
 <BaseLayout title={`${p.title} · ${SITE.author[locale]}`} description={p.description} locale={locale} wide>
   <div class="container wide project">
@@ -76,7 +80,13 @@ const hasDiagram = spec !== undefined;
       </Section>
 
       <Section id="demo" title={t(locale, 'section.demo')}>
-        {slug === 'baro' ? <BaroSim client:visible locale={locale} /> : <SpReplay client:visible locale={locale} />}
+        {slug === 'baro' ? (
+          <BaroSim client:visible locale={locale} />
+        ) : slug === 'stockpulse' ? (
+          <SpReplay client:visible locale={locale} />
+        ) : (
+          noDemoFor(slug)
+        )}
       </Section>
 
       <Section id="ops" title={t(locale, 'section.ops')}>

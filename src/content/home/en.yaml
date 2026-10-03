@@ -1,19 +1,19 @@
 hero:
   kicker: 'CLOUD / INFRA ENGINEER'
   titleLines:
-    - 'I design and run services'
-    - 'that keep running.'
-  lead: 'I built and operated a hybrid AWS–on-prem infrastructure joined by VPN, Kafka-based real-time pipelines, and Kubernetes run with GitOps.'
+    - 'I design and run systems'
+    - 'so services keep running.'
+  lead: 'I built and ran hybrid AWS–on-prem infrastructure over VPN, Kafka-based real-time pipelines and GitOps-managed Kubernetes, all hands-on.'
   miniCaption: 'The core flows of both projects play in turn'
 metrics:
   - value: '1,500'
     unit: ''
-    lines: ['simulated vehicles handled', 'over MQTT → Kafka']
+    lines: ['concurrent simulated vehicles', 'handled over MQTT → Kafka']
     project: baro
     factId: baro.vehicles
   - value: '2.9M'
     unit: ''
-    lines: ['Kafka consumer lag', 'traced and cleared']
+    lines: ['Kafka consumer lag', 'traced to its cause and cleared']
     project: baro
     factId: baro.lag
   - value: '26'

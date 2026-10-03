@@ -7,7 +7,7 @@ test('both case studies show my contribution in both languages', async ({ page }
     ['/projects/baro/', 'PR 128개'],
     ['/en/projects/baro/', '128 pull requests'],
     ['/projects/stockpulse/', '혼자 진행한 개인 프로젝트'],
-    ['/en/projects/stockpulse/', 'personal project'],
+    ['/en/projects/stockpulse/', 'solo project'],
   ];
   for (const [path, text] of pages) {
     await page.goto(path);

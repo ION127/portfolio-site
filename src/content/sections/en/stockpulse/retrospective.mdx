@@ -2,8 +2,8 @@
 ---
 Known limitations, and what I would change next time.
 
-- **The API is effectively a single instance.** WebSocket connections are tracked in process memory, so running several API replicas means some browsers miss updates. The HPA allows up to three, but it has to stay at one until broadcasts move to Redis pub/sub.
-- **CI has no tests.** The pipeline builds only what changed, but there is no test stage before the build, so regressions are caught by hand.
-- **Partition counts are not set.** Topics are auto-created, so partition counts are implicit and adding consumers helps less than it should.
-- **Gaps in observability.** ai-analyzer is a scrape target without a metrics server, kafka-exporter isn’t deployed so the Kafka lag panel may be empty, and Redis is deployed but unused.
-- **CronJob time zone.** The jobs set `timeZone: Asia/Seoul` but their schedules were written in UTC, so training runs nine hours earlier than intended.
+- **The API is effectively a single instance.** WebSocket connections are tracked in process memory, so running several API replicas means some browsers miss alerts. The HPA allows up to three, but it has to stay at one until broadcasts move to Redis pub/sub.
+- **CI has no tests.** The pipeline builds only what changed, but there is no test stage before the build, so regressions have to be caught manually.
+- **Partition counts were never set explicitly.** Topics are left to auto-creation, so adding consumers yields only limited parallelism.
+- **Gaps in observability.** ai-analyzer is listed as a scrape target but exposes no metrics endpoint, kafka-exporter isn’t deployed so the Kafka lag panel may be empty, and Redis is deployed but unused.
+- **CronJob time zone.** The jobs set `timeZone: Asia/Seoul` but their schedules were written in UTC, so all six training and maintenance CronJobs run nine hours earlier than intended.

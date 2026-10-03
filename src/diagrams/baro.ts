@@ -32,7 +32,7 @@ export const baro: DiagramSpec = {
       id: 'mobile', x: 25, y: 110, w: 150,
       title: { ko: '승객 모바일 웹', en: 'Rider web app' },
       sub: { ko: 'React · SSE 수신', en: 'React · SSE client' },
-      tip: { kind: 'React 18 · Vite', desc: { ko: '호출 → 배차 → 탑승 → 도착 흐름의 승객 앱입니다.', en: 'The rider app for request → dispatch → ride → arrival.' } },
+      tip: { kind: 'React 18 · Vite', desc: { ko: '호출 → 배차 → 탑승 → 도착 흐름의 승객 앱입니다.', en: 'The rider app for request → dispatch → pickup → arrival.' } },
     },
     {
       id: 'admin', x: 25, y: 200, w: 150,
@@ -65,7 +65,7 @@ export const baro: DiagramSpec = {
       id: 'alb', x: 225, y: 110,
       title: both('Public ALB'),
       sub: { ko: 'HTTPS · 경로 라우팅', en: 'HTTPS · path routing' },
-      tip: { kind: 'HTTPS · TLS 1.3 · ACM', desc: { ko: '경로 기반 라우팅, */internal/* 는 403입니다.', en: 'Path-based routing; */internal/* returns 403.' } },
+      tip: { kind: 'HTTPS · TLS 1.2/1.3 · ACM', desc: { ko: '경로 기반 라우팅, */internal/* 는 403입니다.', en: 'Path-based routing; */internal/* returns 403.' } },
     },
     {
       id: 'gateway', x: 225, y: 200,
@@ -77,19 +77,19 @@ export const baro: DiagramSpec = {
       id: 'user', x: 225, y: 290,
       title: both('user'),
       sub: { ko: '회원 · 토큰 발급', en: 'Accounts · tokens' },
-      tip: { kind: 'Kotlin · Spring Boot 3', desc: { ko: '회원가입 · 로그인 · 토큰 발급(refresh 14일).', en: 'Sign-up, login and tokens (14-day refresh).' } },
+      tip: { kind: 'Kotlin · Spring Boot 3', desc: { ko: '회원가입 · 로그인 · 토큰 발급(refresh 14일).', en: 'Sign-up, login and token issuance (14-day refresh tokens).' } },
     },
     {
       id: 'mosquitto', x: 225, y: 470,
       title: both('Mosquitto'),
       sub: both('EC2 · MQTT'),
-      tip: { kind: 'EC2 t3.micro · :1883', desc: { ko: 'IoT Core에서 자체 운영으로 전환. 큐 한도 1000 → 50000.', en: 'Moved off IoT Core to self-hosted. Queue limit 1000 → 50000.' } },
+      tip: { kind: 'EC2 t3.micro · :1883', desc: { ko: 'IoT Core에서 자체 운영으로 전환. 큐 한도 1,000 → 50,000.', en: 'Moved off IoT Core to self-hosted. Queue limit 1,000 → 50,000.' } },
     },
     {
       id: 'dispatch', x: 380, y: 200,
       title: both('dispatch'),
-      sub: { ko: '배차 · 선점 락 · SSE', en: 'Dispatch · locks' },
-      tip: { kind: 'Kotlin · Spring Boot 3 · hexagonal', desc: { ko: 'PRE배차 · 배차 · 취소 · 재배차 · 승객 SSE.', en: 'Quotes, dispatch, cancel, re-dispatch, rider SSE.' } },
+      sub: { ko: '배차 · 선점 락 · SSE', en: 'Dispatch · locks · SSE' },
+      tip: { kind: 'Kotlin · Spring Boot 3 · hexagonal', desc: { ko: 'PRE배차 · 배차 · 취소 · 재배차 · 승객 SSE.', en: 'Pre-dispatch quotes, dispatch, cancellation, re-dispatch, rider SSE.' } },
     },
     {
       id: 'control', x: 380, y: 470,
@@ -119,7 +119,7 @@ export const baro: DiagramSpec = {
       id: 'relocation', x: 690, y: 200,
       title: both('relocation'),
       sub: { ko: '승차대 점수 · 재배치', en: 'Stand scoring' },
-      tip: { kind: 'Kotlin · Spring Boot 3 · PostGIS', desc: { ko: '운행을 마친 차량을 수요 높은 승차대로 보냅니다.', en: 'Sends cars that finish a ride to high-demand stands.' } },
+      tip: { kind: 'Kotlin · Spring Boot 3 · PostGIS', desc: { ko: '운행을 마친 차량을 수요 높은 승차대로 보냅니다.', en: 'Sends cars that finish a trip to high-demand stands.' } },
     },
     {
       id: 'ialb', x: 690, y: 320,
@@ -131,13 +131,13 @@ export const baro: DiagramSpec = {
       id: 'prom', x: 915, y: 110, w: 160,
       title: both('Prometheus'),
       sub: { ko: 'Grafana · 알림 룰', en: 'Grafana · alert rules' },
-      tip: { kind: 'kube-prometheus-stack', desc: { ko: 'AWS와 온프렘을 한곳에서 관측합니다.', en: 'Observes AWS and on-prem in one place.' } },
+      tip: { kind: 'kube-prometheus-stack', desc: { ko: 'AWS와 온프렘을 한곳에서 관측합니다.', en: 'Monitors AWS and on-prem from one place.' } },
     },
     {
       id: 'airflow', x: 915, y: 230, w: 160,
       title: both('Airflow'),
       sub: { ko: '매일 02:00 수요 학습', en: 'Daily 02:00 demand model' },
-      tip: { kind: 'Airflow 3.2 · GitSync', desc: { ko: '매일 02:00 수요를 학습해 승차대 가중치를 만듭니다.', en: 'Learns demand every day at 02:00 and produces stand weights.' } },
+      tip: { kind: 'Airflow 3.2 · GitSync', desc: { ko: '매일 02:00 수요를 학습해 승차대 가중치를 만듭니다.', en: 'Trains a demand model every day at 02:00 and produces stand weights.' } },
     },
     {
       id: 'tsdb', x: 915, y: 350, w: 160,
@@ -189,7 +189,7 @@ export const baro: DiagramSpec = {
     { ko: '한눈에 보기', en: 'At a glance' },
     { ko: '차량 위치가 흐르는 길', en: 'How vehicle positions flow' },
     { ko: '호출 한 건이 배차되기까지', en: 'From one request to a dispatched car' },
-    { ko: '운행이 끝나면 — 재배치', en: 'After the ride — relocation' },
+    { ko: '운행이 끝나면 — 재배치', en: 'After the trip — relocation' },
     { ko: '밤사이 — 수요 학습', en: 'Overnight — learning demand' },
     { ko: '지켜보는 눈 — 관측', en: 'Keeping watch — observability' },
   ],
@@ -198,15 +198,15 @@ export const baro: DiagramSpec = {
       chapter: 0, nodes: [], routes: [],
       text: {
         ko: 'BARO는 <b>승객 앱 · 차량</b>, 서비스가 도는 <b>AWS</b>, 분석 · 관측을 맡은 <b>온프레미스(OpenStack K3s)</b>로 나뉩니다. AWS와 온프레미스는 Site-to-Site VPN으로 이어져 있습니다.',
-        en: 'BARO splits into <b>rider apps and vehicles</b>, <b>AWS</b> where the services run, and <b>on-prem (OpenStack K3s)</b> for analytics and observability. AWS and on-prem are joined by a site-to-site VPN.',
+        en: 'BARO splits into <b>rider apps and vehicles</b>, <b>AWS</b> where the services run, and <b>on-prem (OpenStack K3s)</b> for analytics and observability. AWS and on-prem are joined by a Site-to-Site VPN.',
       },
       facts: ['ECS Fargate ×7', 'EC2: Kafka · Mosquitto', 'IPsec VPN'],
     },
     {
       chapter: 1, nodes: ['vehicle', 'mosquitto', 'control'], routes: [['E7', 'E8']],
       text: {
-        ko: '차량 1500대가 3초마다 위치를 MQTT(QoS0)로 보냅니다. control은 <b>공유 구독</b>으로 받아서, 인스턴스를 늘려도 한 메시지는 한 곳에서만 처리됩니다.',
-        en: '1,500 vehicles publish their position over MQTT (QoS 0) every 3 seconds. control receives them through a <b>shared subscription</b>, so each message goes to only one instance even as it scales out.',
+        ko: '차량 1,500대가 1초마다(시뮬레이션 시간으로는 3초, 3배속) 위치를 MQTT(QoS0)로 보냅니다. control은 <b>공유 구독</b>으로 받아서, 인스턴스를 늘려도 한 메시지는 한 곳에서만 처리됩니다.',
+        en: '1,500 vehicles publish their position over MQTT (QoS 0) every second (3 seconds of simulated time at 3× speed). The control service receives them through a <b>shared subscription</b>, so each message goes to only one instance even as it scales out.',
       },
       facts: ['vehicles/{id}/telemetry', '$share/control-service'],
     },
@@ -214,15 +214,15 @@ export const baro: DiagramSpec = {
       chapter: 1, nodes: ['control', 'gateway', 'alb', 'admin', 'kafka'], routes: [['-E6', '-E3', '-E2'], ['E9']],
       text: {
         ko: '관제 화면에는 SSE로 곧장 뿌리고, 나머지는 Kafka <code>vehicle-data-topic</code>으로 보냅니다. key=carId라 같은 차량의 위치는 순서가 보장됩니다.',
-        en: 'The control console gets positions straight over SSE; everything else goes to the Kafka <code>vehicle-data-topic</code>. Keyed by carId, so each vehicle’s positions stay in order.',
+        en: 'The control console gets positions straight over SSE; everything else goes to the Kafka <code>vehicle-data-topic</code>. Messages are keyed by carId, so each vehicle’s positions stay in order.',
       },
       facts: ['4 partitions', 'key = carId'],
     },
     {
       chapter: 1, nodes: ['kafka', 'dispatch', 'valkey', 'vpn', 'consumer', 'tsdb'], routes: [['E10', 'E12'], ['E20a', 't1', 'E20b', 'E21']],
       text: {
-        ko: 'dispatch는 10초 넘은 메시지를 버리고 빈 차만 Valkey GEO에 올립니다. 온프레미스 consumer는 VPN 너머에서 같은 토픽을 받아 TimescaleDB에 쌓습니다.',
-        en: 'dispatch drops messages older than 10 seconds and keeps only idle cars in the Valkey GEO index. The on-prem consumer reads the same topic across the VPN and stores it in TimescaleDB.',
+        ko: 'dispatch는 10초 넘은 메시지를 버리고 빈 차와 재배치 중인 차만 Valkey GEO에 올립니다. 온프레미스 consumer는 VPN 너머에서 같은 토픽을 받아 TimescaleDB에 쌓습니다.',
+        en: 'The dispatch service drops messages older than 10 seconds and keeps only idle and relocating cars in the Valkey GEO index. The on-prem consumer reads the same topic across the VPN and stores it in TimescaleDB.',
       },
       facts: ['GEO dispatch:cars:idle:geo', 'hypertable vehicle_data'],
     },
@@ -230,7 +230,7 @@ export const baro: DiagramSpec = {
       chapter: 2, nodes: ['mobile', 'alb', 'gateway', 'user', 'dispatch', 'kakao'], routes: [['E1', 'E3', 'E5', 'E11'], ['-E4']],
       text: {
         ko: '호출은 ALB → gateway를 지납니다. JWT는 user가 발급하고 gateway 한 곳에서만 검증합니다. dispatch는 Kakao로 요금 · 경로를 먼저 계산해 보여줍니다(PRE배차).',
-        en: 'A request passes the ALB and then the gateway. JWTs are issued by user and verified only at the gateway. dispatch first shows a fare and route from Kakao (the pre-dispatch quote).',
+        en: 'A request passes the ALB and then the gateway. JWTs are issued by the user service and verified only at the gateway. The dispatch service first shows a fare and route from Kakao (the pre-dispatch quote).',
       },
       facts: ['X-Authenticated-User-Id', 'quote TTL 10 min'],
     },
@@ -262,7 +262,7 @@ export const baro: DiagramSpec = {
       chapter: 3, nodes: ['vehicle', 'mosquitto', 'control', 'relocation'], routes: [['E7', 'E8', 'E19']],
       text: {
         ko: '목적지 도착 이벤트를 받은 control이 relocation에 비동기로 알립니다. 배차 흐름과 엮이지 않도록 분리한 구조입니다.',
-        en: 'When a car reports arriving at its destination, control notifies relocation asynchronously, kept separate from the dispatch flow.',
+        en: 'When a car reports arriving at its destination, the control service notifies the relocation service asynchronously, kept separate from the dispatch flow.',
       },
       facts: ['ARRIVED(to_dest)', '202 Accepted'],
     },
@@ -277,8 +277,8 @@ export const baro: DiagramSpec = {
     {
       chapter: 4, nodes: ['dispatch', 'ialb', 'vpn', 'airflow', 'tsdb'], routes: [['-E18', '-E22b', '-t2', '-E22a'], ['E23']],
       text: {
-        ko: '매일 02:00, Airflow가 VPN 너머 internal ALB로 전날 배차 데이터를 가져와 승차대 × 요일 × 시간대 수요를 집계합니다.',
-        en: 'Every day at 02:00, Airflow pulls the previous day’s dispatch data through the internal ALB across the VPN and aggregates demand by stand × weekday × time slot.',
+        ko: '매일 02:00, Airflow가 VPN 너머 internal ALB로 최근 24시간 배차 데이터를 가져와 승차대 × 요일 × 시간대 수요를 집계합니다.',
+        en: 'Every day at 02:00, Airflow pulls the last 24 hours of dispatch data through the internal ALB across the VPN and aggregates demand by stand × day of week × time slot.',
       },
       facts: ['gzip CSV export', 'X-Internal-Api-Key'],
     },
@@ -286,7 +286,7 @@ export const baro: DiagramSpec = {
       chapter: 4, nodes: ['airflow', 'vpn', 'ialb', 'relocation'], routes: [['E22a', 't2', 'E22b', 'E17']],
       text: {
         ko: 'XGBoost로 학습한 승차대 가중치를 relocation에 보내면, 다음 재배치부터 바로 반영됩니다.',
-        en: 'Stand weights learned with XGBoost are sent to relocation and apply from the next relocation onward.',
+        en: 'Stand weights learned with XGBoost are pushed to the relocation service and take effect from the next relocation.',
       },
       facts: ['weights 0–1'],
     },

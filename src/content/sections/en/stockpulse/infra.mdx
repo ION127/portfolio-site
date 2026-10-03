@@ -3,16 +3,15 @@
 ### On-prem Kubernetes
 
 - A single `stock` namespace runs 12 Deployments, 3 StatefulSets (Kafka ×3, ZooKeeper, TimescaleDB), 2 DaemonSets, 6 CronJobs and 3 Jobs.
-- Traffic enters through one MetalLB (L2) address and an nginx Ingress: `/api`, `/ws` and `/auth` go to FastAPI, everything else to Next.js. WebSocket timeouts are raised to one hour.
-- Storage combines static NFS PVs (Retain) with nfs-subdir-external-provisioner, and heavy workloads (Kafka, the database, the API, ML) are steered to `node-tier=heavy` nodes.
-- Images live in a private Harbor, and a DaemonSet distributes its self-signed certificate to each node’s containerd.
+- Traffic enters through one MetalLB (L2) address and an nginx Ingress: `/api`, `/ws`, `/auth` and `/metrics` go to FastAPI, `/grafana` and `/prometheus` to monitoring, everything else to Next.js. WebSocket timeouts are raised to one hour.
+- Storage combines static NFS PVs (Retain) with nfs-subdir-external-provisioner, and heavy workloads (Kafka, the database, the API, ML) are preferentially scheduled on `node-tier=heavy` nodes.
+- Images live in a private Harbor, and a DaemonSet distributes Harbor’s self-signed certificate to each node’s containerd.
 
 ### From git push to deploy
 
-GitHub Actions on a self-hosted runner maps changed paths to services and builds **only the services that changed**. It pushes `stock/<svc>:<sha7>` to Harbor and commits the new tags to the manifests; ArgoCD checks that commit every 60 seconds and applies it to the cluster. Secrets are stored in Git encrypted with Sealed Secrets.
+GitHub Actions on a self-hosted runner maps changed paths to services and builds **only the services that changed**. It pushes `stock/<svc>:<sha7>` to Harbor and commits the new tags to the manifests; ArgoCD polls the repo every 60 seconds, picks up that commit and syncs it to the cluster. Secrets are encrypted with Sealed Secrets before they go into Git.
 
 ### Retention and cost
 
-- TimescaleDB hypertables compress chunks older than a day, and drop prices after 30 days and analyses after 90 by whole chunks — far lighter than row-by-row DELETEs.
-- A daily CronJob handles chunk cleanup, VACUUM ANALYZE and a size report; weekly CronJobs watch NFS usage (warning at 80%) and rewrite the Redis AOF.
-- Kafka keeps at most 7 days or 15 GiB.
+- Two weekly CronJobs watch NFS usage (warning at 80%) and rewrite the Redis AOF.
+- Kafka retention is capped at 7 days or 15 GiB per partition, whichever comes first.

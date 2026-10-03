@@ -3,8 +3,8 @@
 ### 온프레미스 쿠버네티스
 
 - 네임스페이스 `stock` 하나에 Deployment 12개, StatefulSet 3개(Kafka ×3 · ZooKeeper · TimescaleDB), DaemonSet 2개, CronJob 6개, Job 3개를 올렸습니다.
-- 외부 노출은 MetalLB(L2)가 준 IP 하나에 nginx Ingress로 경로를 나눕니다. `/api` · `/ws` · `/auth`는 FastAPI로, 나머지는 Next.js로 갑니다. WebSocket은 타임아웃을 1시간으로 늘렸습니다.
-- 저장소는 NFS 정적 PV(Retain)와 nfs-subdir-external-provisioner를 함께 쓰고, 무거운 워크로드(Kafka · DB · API · ML)는 `node-tier=heavy` 노드로 보냅니다.
+- 외부 노출은 MetalLB(L2)가 준 IP 하나에 nginx Ingress로 경로를 나눕니다. `/api` · `/ws` · `/auth` · `/metrics`는 FastAPI로, `/grafana` · `/prometheus`는 모니터링으로, 나머지는 Next.js로 갑니다. WebSocket은 타임아웃을 1시간으로 늘렸습니다.
+- 저장소는 NFS 정적 PV(Retain)와 nfs-subdir-external-provisioner를 함께 쓰고, 무거운 워크로드(Kafka · DB · API · ML)는 `node-tier=heavy` 노드에 우선 배치합니다.
 - 이미지는 사설 Harbor에 두고, 자체 서명 인증서는 DaemonSet이 각 노드의 containerd에 배포합니다.
 
 ### Git 푸시에서 배포까지
@@ -13,6 +13,5 @@ self-hosted runner의 GitHub Actions가 바뀐 경로를 서비스에 매핑해 
 
 ### 데이터 보존과 비용
 
-- TimescaleDB hypertable은 하루 지난 청크를 자동 압축하고, 시세는 30일 · 분석은 90일이 지나면 청크 단위로 지웁니다. 행 단위 DELETE보다 훨씬 가볍게 정리됩니다.
-- 매일 도는 CronJob이 청크 정리 · VACUUM ANALYZE · 용량 리포트를, 매주 도는 CronJob이 NFS 사용률(80% 경고)과 Redis AOF 정리를 맡습니다.
-- Kafka는 7일 또는 15GiB까지만 보관합니다.
+- 매주 도는 CronJob 두 개가 각각 NFS 사용률(80% 경고)과 Redis AOF 재작성을 맡습니다.
+- Kafka는 7일 또는 파티션당 15GiB까지만 보관합니다.

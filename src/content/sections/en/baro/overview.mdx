@@ -1,7 +1,7 @@
 ---
 ---
-For autonomous taxis to work on real roads, you have to receive the positions of hundreds of vehicles without gaps, dispatch the nearest idle car, and send cars that finish a ride back to where demand is high. BARO ties that whole loop — **request → dispatch → ride → relocation** — into one driverless taxi dispatch and control platform.
+For autonomous taxis to work on real roads, you have to ingest the positions of hundreds of vehicles continuously, dispatch the nearest idle car, and send cars that finish a trip to where demand is high. BARO ties that whole loop — **request → dispatch → trip → relocation** — into one driverless taxi dispatch and control platform.
 
-Instead of real cars, a Python simulator runs 1,500 vehicles starting from 254 taxi stands in Seoul. The services run on AWS (ECS Fargate plus self-hosted Kafka and Mosquitto), while analytics, observability and long-term storage run on K3s on an on-prem OpenStack cloud. The two sides are connected by a site-to-site VPN.
+Instead of real cars, a Python simulator runs 1,500 vehicles starting from 254 taxi stands in Seoul. The services run on AWS (ECS Fargate plus self-hosted Kafka and Mosquitto), while analytics, observability and long-term storage run on K3s on an on-prem OpenStack cloud. The two sides are connected by an AWS Site-to-Site VPN.
 
-It was the final cloud project of the 3rd cohort of the Hyundai AutoEver Mobility SW School, built by five people from April to June 2026. I worked on backend and DevOps.
+It was the cloud-track capstone project for cohort 3 of Hyundai AutoEver’s Mobility SW School, built by a team of five from April to June 2026. My role was backend and DevOps.

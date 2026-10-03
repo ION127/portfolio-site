@@ -40,7 +40,7 @@ test('a case study toggles to the same project in the other language', async ({ 
 
 test('the English home shows English content and English links', async ({ page }) => {
   await page.goto('/en/');
-  await expect(page.locator('h1')).toContainText('I design and run services');
+  await expect(page.locator('h1')).toContainText('I design and run systems');
   await expect(page.locator('#ops .incident')).toHaveCount(3);
   await expect(page.locator('#projects .card h3 a').first()).toHaveAttribute('href', '/en/projects/baro/');
   await expect(page.locator('#ops .incident h3 a').first()).toHaveAttribute('href', '/en/projects/baro/#incident-baro-kafka-block');

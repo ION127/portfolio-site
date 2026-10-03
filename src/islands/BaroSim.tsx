@@ -4,9 +4,12 @@ import './barosim.css';
 import { t, type Locale, type UiKey } from '../i18n';
 import { boundsOf } from '../lib/baro-sim/demand';
 import { createDirector, SPOTLIGHT_PHASES, type Director, type Phase } from '../lib/baro-sim/director';
-import { createSim, DEFAULTS, type CountKey, type Sim } from '../lib/baro-sim/engine';
+import { createSim, DEFAULTS, type CountKey, type Sim, type Vehicle } from '../lib/baro-sim/engine';
 import { formatDistance } from '../lib/baro-sim/format';
 import { haversineMeters, metersToLngDeg, type LatLng } from '../lib/baro-sim/geo';
+import type { RoadData } from '../lib/baro-sim/roadbuild';
+import { decodeRoads, type RoadNetwork } from '../lib/baro-sim/roads';
+import roadsUrl from '../data/seoul-roads.json?url';
 
 interface Props {
   locale: Locale;
@@ -81,14 +84,24 @@ export default function BaroSim({ locale, seed }: Props) {
   const [paused, setPaused] = useState(false);
   const [panel, setPanel] = useState<PanelState | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null);
+  const [roadsMode, setRoadsMode] = useState<'loading' | 'on' | 'off'>('loading');
 
   useEffect(() => {
     let cancelled = false;
     let cleanup = () => {};
 
     void (async () => {
-      // Leaflet 1.9는 UMD 빌드라 번들러에 따라 default로 감싸져 온다.
-      const mod = await import('leaflet');
+      const loadRoads = async (): Promise<RoadNetwork | null> => {
+        try {
+          // 응답이 멈춰도 데모가 기다리기만 하지 않게 8초 뒤에는 직선으로 시작한다.
+          const res = await fetch(roadsUrl, { signal: AbortSignal.timeout(8_000) });
+          return res.ok ? decodeRoads((await res.json()) as RoadData) : null;
+        } catch {
+          return null;
+        }
+      };
+      // Leaflet 1.9는 UMD 빌드라 번들러에 따라 default로 감싸져 온다. 도로 데이터는 함께 받고, 못 받으면 직선으로 움직인다.
+      const [mod, roads] = await Promise.all([import('leaflet'), loadRoads()]);
       const L = ((mod as unknown as { default?: Leaflet }).default ?? mod) as Leaflet;
       const fig = figRef.current;
       const mapEl = mapRef.current;
@@ -96,7 +109,8 @@ export default function BaroSim({ locale, seed }: Props) {
       const ctx = canvas?.getContext('2d');
       if (cancelled || !fig || !mapEl || !canvas || !ctx) return;
 
-      const sim = createSim({ seed: seed ?? Math.floor(Math.random() * 2 ** 31) });
+      const sim = createSim({ seed: seed ?? Math.floor(Math.random() * 2 ** 31), roads });
+      setRoadsMode(roads ? 'on' : 'off');
       sim.step(WARMUP_S);
       const director = createDirector(sim);
       const reduced = window.matchMedia(REDUCED_QUERY).matches;
@@ -179,6 +193,20 @@ export default function BaroSim({ locale, seed }: Props) {
         ctx.stroke();
         ctx.setLineDash([]);
       };
+      const remaining = (v: Vehicle) => v.route.slice(v.routeAt);
+      const polyline = (from: LatLng, rest: readonly LatLng[], color: string, dash: number[] = []) => {
+        ctx.strokeStyle = color;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        const p0 = pt(from);
+        ctx.moveTo(p0.x, p0.y);
+        for (const q of rest) {
+          const p = pt(q);
+          ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      };
 
       const drawSpotlight = (r: number) => {
         const s = director.spotlight;
@@ -222,10 +250,12 @@ export default function BaroSim({ locale, seed }: Props) {
         const v = s.vehicleId !== null ? sim.vehicleById(s.vehicleId) : undefined;
         if (v) {
           const p = pt(v.pos);
-          if (phase === 'reserve' || phase === 'ack' || phase === 'pickup') line(p, o, colors.pickup);
+          // 예약 · ACK는 배정만 보여 주고, 움직이는 동안에는 남은 경로를 도로를 따라 그린다.
+          if (phase === 'reserve' || phase === 'ack') line(p, o, colors.pickup);
+          if (phase === 'pickup') polyline(v.pos, remaining(v), colors.pickup);
           if (phase === 'trip') {
             const d = pt(s.destination);
-            line(p, d, colors.trip);
+            polyline(v.pos, remaining(v), colors.trip);
             ctx.fillStyle = colors.trip;
             ctx.beginPath();
             ctx.moveTo(d.x, d.y - 7);
@@ -237,7 +267,7 @@ export default function BaroSim({ locale, seed }: Props) {
           }
           if (phase === 'relocate' && s.standIndex !== null) {
             const st = pt(sim.stands[s.standIndex]!);
-            line(p, st, colors.relocating, [5, 4]);
+            polyline(v.pos, remaining(v), colors.relocating, [5, 4]);
             ctx.fillStyle = colors.relocating;
             ctx.fillRect(st.x - 5, st.y - 5, 10, 10);
           }
@@ -299,12 +329,10 @@ export default function BaroSim({ locale, seed }: Props) {
         const fit = { animate, duration: 1.2, padding: [60, 60] as [number, number], maxZoom: 14 };
         if (phase === 'overview') map.flyToBounds(seoul, { animate, duration: 1.2, padding: [12, 12] });
         else if (phase === 'call' && s) map.flyTo(ll(s.origin), 12, { animate, duration: 1.2 });
-        else if (phase === 'pickup' && s && s.vehicleId !== null) {
+        else if ((phase === 'pickup' || phase === 'trip' || phase === 'relocate') && s && s.vehicleId !== null) {
+          // 움직이는 단계는 남은 경로 전체가 보이게 맞춘다.
           const v = sim.vehicleById(s.vehicleId);
-          if (v) map.flyToBounds(L.latLngBounds([ll(v.pos), ll(s.origin)]), fit);
-        } else if (phase === 'trip' && s) map.flyToBounds(L.latLngBounds([ll(s.origin), ll(s.destination)]), fit);
-        else if (phase === 'relocate' && s && s.standIndex !== null) {
-          map.flyToBounds(L.latLngBounds([ll(s.destination), ll(sim.stands[s.standIndex]!)]), fit);
+          if (v) map.flyToBounds(L.latLngBounds([ll(v.pos), ...remaining(v).map(ll)]), fit);
         }
       };
 
@@ -421,7 +449,13 @@ export default function BaroSim({ locale, seed }: Props) {
 
   const speed = panel ? (panel.scale === 0 ? t(locale, 'sim.explaining') : `×${panel.scale}`) : '—';
   return (
-    <figure ref={figRef} className="barosim" data-phase={panel?.phase ?? 'loading'} data-ready={ready ? 'true' : 'false'}>
+    <figure
+      ref={figRef}
+      className="barosim"
+      data-phase={panel?.phase ?? 'loading'}
+      data-ready={ready ? 'true' : 'false'}
+      data-roads={roadsMode}
+    >
       <div className="bs-stage">
         <div ref={mapRef} className="bs-map" />
         {/* 지도 영역에는 출처 링크가 들어가므로 그림 역할(role=img)은 차량을 그리는 캔버스에 둔다. */}

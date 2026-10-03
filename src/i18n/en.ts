@@ -51,7 +51,7 @@ export const en: Record<keyof typeof ko, string> = {
   'sim.seconds': '{n} s',
   'sim.mapLabel': 'Simulation of 1,500 cars in Seoul cycling through requests, dispatch, trips and relocation',
   'sim.note':
-    'BARO’s real dispatch rules (10 nearest candidates within 15 km, 10 s ACK timeout, relocation score), replayed in the browser. Routes are simplified to straight lines and demand weights are examples.',
+    'BARO’s real dispatch rules (10 nearest candidates within 15 km, 10 s ACK timeout, relocation score), replayed in the browser. Cars follow the OpenStreetMap road network at 60 km/h, and demand weights are examples.',
   'sim.step.overview': '1,500 cars are taking ride requests across Seoul',
   'sim.step.call': 'A ride request comes in near {area}',
   'sim.step.callCity': 'A ride request comes in somewhere in Seoul',

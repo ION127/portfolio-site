@@ -69,6 +69,26 @@ test.describe('BARO dispatch demo', () => {
     expect(await draws()).toBe(count);
   });
 
+  test('drives the cars along the road network', async ({ page }) => {
+    await openDemo(page);
+    await expect(page.locator('.barosim')).toHaveAttribute('data-roads', 'on');
+  });
+
+  test('falls back to straight lines when the road data never answers', async ({ page }) => {
+    await page.route('**/seoul-roads*.json', () => {
+      // 응답하지 않는 요청
+    });
+    await openDemo(page);
+    await expect(page.locator('.barosim')).toHaveAttribute('data-roads', 'off');
+  });
+
+  test('keeps running in straight lines when the road data cannot load', async ({ page }) => {
+    await page.route('**/seoul-roads*.json', (route) => route.fulfill({ status: 404, body: '' }));
+    await openDemo(page);
+    await expect(page.locator('.barosim')).toHaveAttribute('data-roads', 'off');
+    await expect(page.locator('.barosim')).toHaveAttribute('data-phase', 'call', { timeout: 15_000 });
+  });
+
   test('starts paused for visitors who ask for reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await openDemo(page);

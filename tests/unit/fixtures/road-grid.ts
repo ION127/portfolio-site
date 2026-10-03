@@ -18,7 +18,7 @@ export function gridRoads(): RoadNetwork {
   let w = 100;
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 2; c++) {
-      const tags = r === 0 && c === 1 ? { highway: 'primary', oneway: 'yes' } : { highway: 'primary' };
+      const tags: Record<string, string> = r === 0 && c === 1 ? { highway: 'primary', oneway: 'yes' } : { highway: 'primary' };
       elements.push({ type: 'way', id: w++, nodes: [id(r, c), id(r, c + 1)], tags });
     }
   }

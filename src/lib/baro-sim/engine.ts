@@ -1,6 +1,7 @@
 import { demandWeight } from './demand';
 import { haversineMeters, jitter, moveToward, type LatLng } from './geo';
 import { between, createRng, intBetween, pick, pickWeighted, type Rng } from './random';
+import type { RoadNetwork } from './roads';
 import { STANDS } from './stands';
 
 export type VehicleState = 'idle' | 'reserved' | 'pickup' | 'trip' | 'relocating';
@@ -13,6 +14,10 @@ export interface Vehicle {
   pos: LatLng;
   state: VehicleState;
   target: LatLng | null;
+  /** 따라갈 지점들(마지막이 target). 도로망이 없으면 [target] 하나다. */
+  route: LatLng[];
+  /** route에서 다음에 향할 지점 번호 */
+  routeAt: number;
   callId: number | null;
   standIndex: number | null;
 }
@@ -61,6 +66,8 @@ export interface SimOptions {
   ackTimeoutS?: number;
   backgroundAckFailRate?: number;
   relocationRadiiM?: readonly number[];
+  /** 있으면 차량이 도로를 따라 움직인다 */
+  roads?: RoadNetwork | null;
 }
 
 export interface AddCallOptions {
@@ -153,6 +160,7 @@ export function createSim(options: SimOptions): Sim {
   const ackTimeoutS = options.ackTimeoutS ?? DEFAULTS.ackTimeoutS;
   const backgroundAckFailRate = options.backgroundAckFailRate ?? DEFAULTS.backgroundAckFailRate;
   const radii = options.relocationRadiiM ?? DEFAULTS.relocationRadiiM;
+  const roads = options.roads ?? null;
 
   const startPosition = (): LatLng => {
     const base = pick(rng, stands);
@@ -179,6 +187,8 @@ export function createSim(options: SimOptions): Sim {
     pos: { lat: pos.lat, lng: pos.lng },
     state: 'idle',
     target: null,
+    route: [],
+    routeAt: 0,
     callId: null,
     standIndex: null,
   }));
@@ -188,6 +198,13 @@ export function createSim(options: SimOptions): Sim {
   let nextCallId = 1;
   let callDebt = 0;
   let dispatchedCount = 0;
+
+  /** 목표를 정하고, 도로망이 있으면 도로를 따라가는 경로를 붙인다(못 찾거나 없으면 곧장 간다). */
+  function setCourse(v: Vehicle, target: LatLng | null) {
+    v.target = target;
+    v.route = target ? (roads?.route(v.pos, target) ?? [target]) : [];
+    v.routeAt = 0;
+  }
 
   function candidates(point: LatLng, exclude: readonly number[] = []): Vehicle[] {
     return vehicles
@@ -228,7 +245,7 @@ export function createSim(options: SimOptions): Sim {
       return [{ type: 'failed', callId }];
     }
     nearest.state = 'reserved';
-    nearest.target = null;
+    setCourse(nearest, null);
     nearest.callId = callId;
     nearest.standIndex = null;
     call.status = 'reserved';
@@ -256,7 +273,7 @@ export function createSim(options: SimOptions): Sim {
     const call = v.callId !== null ? calls.get(v.callId) : undefined;
     if (v.state === 'pickup' && call) {
       v.state = 'trip';
-      v.target = call.destination;
+      setCourse(v, call.destination);
       call.status = 'trip';
       events.push({ type: 'pickedUp', callId: call.id, vehicleId: v.id });
     } else if (v.state === 'trip' && call) {
@@ -268,12 +285,12 @@ export function createSim(options: SimOptions): Sim {
       v.state = 'relocating';
       v.callId = null;
       v.standIndex = standIndex;
-      v.target = { lat: stand.lat, lng: stand.lng };
+      setCourse(v, { lat: stand.lat, lng: stand.lng });
       events.push({ type: 'arrived', callId: call.id, vehicleId: v.id });
       events.push({ type: 'relocating', callId: call.id, vehicleId: v.id, standIndex });
     } else if (v.state === 'relocating') {
       v.state = 'idle';
-      v.target = null;
+      setCourse(v, null);
       v.standIndex = null;
       events.push({ type: 'relocated', vehicleId: v.id });
     }
@@ -293,7 +310,7 @@ export function createSim(options: SimOptions): Sim {
       const v = byId.get(call.vehicleId)!;
       if (call.ackAt !== null && time >= call.ackAt) {
         v.state = 'pickup';
-        v.target = call.origin;
+        setCourse(v, call.origin);
         call.status = 'pickup';
         dispatchedCount++;
         events.push({ type: 'ackOk', callId: call.id, vehicleId: v.id });
@@ -311,8 +328,21 @@ export function createSim(options: SimOptions): Sim {
     const stepM = speedMps * h;
     for (const v of vehicles) {
       if (!v.target) continue;
-      v.pos = moveToward(v.pos, v.target, stepM);
-      if (v.pos.lat === v.target.lat && v.pos.lng === v.target.lng) arrive(v, events);
+      // 한 틱 동안 갈 거리만큼 경로의 지점을 차례로 지나간다.
+      let left = stepM;
+      while (left > 0 && v.routeAt < v.route.length) {
+        const next = v.route[v.routeAt]!;
+        const d = haversineMeters(v.pos, next);
+        if (d <= left) {
+          v.pos = { lat: next.lat, lng: next.lng };
+          left -= d;
+          v.routeAt += 1;
+        } else {
+          v.pos = moveToward(v.pos, next, left);
+          left = 0;
+        }
+      }
+      if (v.routeAt >= v.route.length) arrive(v, events);
     }
     for (const call of calls.values()) {
       if (call.status === 'failed' && call.endedAt !== null && time - call.endedAt > FAILED_CALL_TTL_S) calls.delete(call.id);

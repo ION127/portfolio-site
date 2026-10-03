@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { chooseRelocationStand, createSim, DEFAULTS, type SimEvent } from '../../src/lib/baro-sim/engine';
 import { haversineMeters, type LatLng } from '../../src/lib/baro-sim/geo';
 import { STANDS } from '../../src/lib/baro-sim/stands';
+import { buildRoadGraph, type OsmElement } from '../../src/lib/baro-sim/roadbuild';
+import { decodeRoads } from '../../src/lib/baro-sim/roads';
+import { gridPoint, gridRoads } from './fixtures/road-grid';
 
 const O: LatLng = { lat: 37.5, lng: 127.0 };
 const north = (m: number): LatLng => ({ lat: O.lat + m / 111_320, lng: O.lng });
@@ -145,5 +148,72 @@ describe('whole simulation', () => {
       expect(d).toBeGreaterThan(2000 - 800);
       expect(d).toBeLessThan(10_000 + 800);
     }
+  });
+});
+
+describe('with a road network', () => {
+  const onGrid = (p: { lat: number; lng: number }) =>
+    [37.5, 37.51, 37.52].some((lat) => Math.abs(p.lat - lat) < 1e-7) || [127.0, 127.01, 127.02].some((lng) => Math.abs(p.lng - lng) < 1e-7);
+
+  it('drives pickup, trip and relocation along the roads and stops exactly on each target', () => {
+    const roads = gridRoads();
+    const sim = createSim({
+      seed: 1,
+      vehiclePositions: [gridPoint(0, 0)],
+      stands: [gridPoint(0, 0)],
+      callsPerMinute: 0,
+      roads,
+    });
+    const car = sim.vehicles[0]!;
+    // 픽업은 아래 줄을 따라 동쪽, 운행은 대각선 반대편 모서리까지(직선이면 격자 밖을 지난다)
+    const callId = sim.addCall(gridPoint(0, 2), gridPoint(2, 0), { manual: true });
+    sim.dispatch(callId);
+    const seen: string[] = [];
+    for (let i = 0; i < 2_000 && seen.at(-1) !== 'relocated'; i++) {
+      const events = sim.step(1);
+      for (const e of events) if (e.type !== 'call') seen.push(e.type);
+      expect(onGrid(car.pos)).toBe(true);
+      if (events.some((e) => e.type === 'pickedUp')) expect(car.pos).toEqual(gridPoint(0, 2));
+      if (events.some((e) => e.type === 'arrived')) expect(car.pos).toEqual(gridPoint(2, 0));
+    }
+    expect(seen).toEqual(['ackOk', 'pickedUp', 'arrived', 'relocating', 'relocated']);
+    expect(car.pos).toEqual(gridPoint(0, 0));
+    expect(car.route).toEqual([]);
+  });
+
+  it('carries the leftover distance past each road point so the speed stays at 60 km/h', () => {
+    // 점 41개짜리 지그재그 도로(간격 약 35m). 지점에서 남은 거리를 버리면 훨씬 늦게 도착한다.
+    const pts = Array.from({ length: 41 }, (_, i) => ({ lat: 37.5 + (i % 2) * 0.0002, lng: 127.0 + i * 0.0003 }));
+    const elements: OsmElement[] = [
+      ...pts.map((p, i): OsmElement => ({ type: 'node', id: i + 1, lat: p.lat, lon: p.lng })),
+      { type: 'way', id: 100, nodes: pts.map((_, i) => i + 1), tags: { highway: 'primary' } },
+    ];
+    const roads = decodeRoads(buildRoadGraph(elements, { tolerance: 0 }).data);
+    const start = pts[0]!;
+    const sim = createSim({ seed: 1, vehiclePositions: [start], stands: [start], callsPerMinute: 0, roads });
+    const car = sim.vehicles[0]!;
+    sim.dispatch(sim.addCall(pts[40]!, start, { manual: true }));
+    let ticks = 0;
+    let expected = 0;
+    for (let i = 0; i < 1_000; i++) {
+      const before = { ...car.pos };
+      const events = sim.step(1);
+      if (events.some((e) => e.type === 'ackOk')) {
+        const length = car.route.reduce((sum, q, k) => sum + haversineMeters(k === 0 ? before : car.route[k - 1]!, q), 0);
+        expected = length / ((DEFAULTS.speedKmh * 1000) / 3600);
+      }
+      if (expected > 0) ticks += 1;
+      if (events.some((e) => e.type === 'pickedUp')) break;
+    }
+    expect(expected).toBeGreaterThan(60);
+    expect(Math.abs(ticks - expected)).toBeLessThanOrEqual(2);
+  });
+
+  it('keeps driving in straight lines without road data', () => {
+    const sim = createSim({ seed: 1, vehiclePositions: [gridPoint(0, 0)], stands: [gridPoint(0, 0)], callsPerMinute: 0 });
+    const car = sim.vehicles[0]!;
+    sim.dispatch(sim.addCall(gridPoint(2, 2), gridPoint(2, 2), { manual: true }));
+    for (let i = 0; i < 5 && car.state !== 'pickup'; i++) sim.step(1);
+    expect(car.route).toEqual([gridPoint(2, 2)]);
   });
 });

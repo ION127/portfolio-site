@@ -42,8 +42,9 @@ mock_provider "aws" {
 }
 
 variables {
-  domain_name = "example.dev"
-  origin_ip   = "203.0.113.10"
+  domain_name   = "example.dev"
+  origin_ip     = "203.0.113.10"
+  origin_secret = "test-secret-0123456789abcdefghijklmnop"
 }
 
 run "names_the_home_server_for_cloudfront" {
@@ -123,6 +124,28 @@ run "passes_requests_through_to_the_home_server" {
     condition     = toset(one(aws_cloudfront_distribution.app.default_cache_behavior).allowed_methods) == toset(["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"])
     error_message = "로그인 · 게임 API를 위해 모든 메서드를 받는다"
   }
+}
+
+run "signs_every_origin_request_with_the_shared_secret" {
+  command = apply
+
+  assert {
+    condition = anytrue([
+      for h in one(aws_cloudfront_distribution.app.origin).custom_header :
+      h.name == "X-Origin-Verify" && h.value == "test-secret-0123456789abcdefghijklmnop"
+    ])
+    error_message = "집 서버가 CloudFront를 거친 요청만 받도록 오리진 요청마다 비밀 헤더를 붙인다"
+  }
+}
+
+run "rejects_a_short_origin_secret" {
+  command = plan
+
+  variables {
+    origin_secret = "too-short"
+  }
+
+  expect_failures = [var.origin_secret]
 }
 
 run "rejects_an_origin_that_is_not_an_ipv4_address" {

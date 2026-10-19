@@ -126,6 +126,8 @@ scripts/tf.sh site force-unlock <잠금 ID>
 - 경로(`/blackjack`)가 아니라 서브도메인을 쓴다. 앱이 `/style.css`, `/api/...`처럼 사이트 맨 앞 경로를 기준으로 짜여 있어서다.
 - 게임 상태와 로그인 API는 사람마다 다르므로 캐시하지 않고(CachingDisabled), 헤더 · 쿠키 · 쿼리를 그대로 넘긴다(AllViewerExceptHostHeader).
 - 집 IP는 저장소에 넣지 않는다. `infra/blackjack/terraform.tfvars`(git에 안 올라감)에 적는다.
+- 공인 IP의 8000번은 바깥에 열려 있으므로, CloudFront가 오리진 요청마다 비밀 헤더(`X-Origin-Verify`)를 붙이고 앱(`BJ_ORIGIN_SECRET`)은 그 헤더가 맞는 요청만 받는다. `http://<공인 IP>:8000`으로 직접 들어오면 403이고, 화면은 HTTPS 주소로만 열린다. 같은 PC의 `localhost`는 개발용으로 그대로 받는다.
+- 비밀값은 PC의 `~/.blackjack/origin.secret`에만 둔다(저장소 · OneDrive 밖). Terraform에는 `TF_VAR_origin_secret`으로 넘긴다.
 
 ```bash
 cat > infra/blackjack/terraform.tfvars <<'TFVARS'
@@ -133,6 +135,7 @@ domain_name = "jjcloud.dev"
 origin_ip   = "<집 공인 IP>"   # curl https://checkip.amazonaws.com
 TFVARS
 export AWS_PROFILE=portfolio-admin
+export TF_VAR_origin_secret="$(cat ~/.blackjack/origin.secret)"
 scripts/tf.sh blackjack init -backend-config="bucket=<상태 버킷>"
 scripts/tf.sh blackjack plan
 scripts/tf.sh blackjack apply
@@ -142,5 +145,6 @@ scripts/tf.sh blackjack apply
 
 - PC가 꺼져 있거나 앱이 멈추면 CloudFront가 502/504를 돌려준다.
 - 가정용 IP가 바뀌면 `origin_ip`만 고쳐 다시 apply한다(오리진 레코드 TTL 60초).
-- 방문자 ↔ CloudFront는 HTTPS지만 CloudFront ↔ 집 PC 구간은 HTTP이고, 공인 IP의 8000번도 그대로 열려 있다. 막으려면 CloudFront가 비밀 헤더를 붙이고 앱이 그 헤더 없는 요청을 거절하게 한다.
+- 앱 서버는 `~/.blackjack/run-public.cmd`(더블클릭)로 띄운다. DB(`play.db`) · 로그인 서명 키(`jwt.secret`) · 비밀 헤더 값(`origin.secret`)을 그 폴더에서 읽는다. `BJ_ORIGIN_SECRET` 없이 띄우면 IP 직접 접속이 다시 열리고, 값이 틀리면 HTTPS 주소가 403이 된다.
+- 방문자 ↔ CloudFront는 HTTPS지만 CloudFront ↔ 집 PC 구간은 평문 HTTP다(비밀 헤더도 이 구간을 지난다). 이 구간까지 암호화하려면 PC에서 공인 인증서로 TLS를 받아야 한다.
 - 앱은 접속자 IP를 `request.client.host`로 보는데, CloudFront를 거치면 CloudFront 주소가 보인다. IP별 요청 제한은 같은 CloudFront 지점을 쓰는 사람끼리 나눠 쓰게 된다.

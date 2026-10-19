@@ -51,3 +51,14 @@ variable "origin_port" {
     error_message = "CloudFront 오리진 HTTP 포트는 80 또는 1024~65535여야 합니다."
   }
 }
+
+variable "origin_secret" {
+  description = "CloudFront가 오리진 요청마다 X-Origin-Verify 헤더로 붙이는 비밀값. 앱의 BJ_ORIGIN_SECRET과 같아야 한다. 저장소에 넣지 않는다(TF_VAR_origin_secret)."
+  type        = string
+  sensitive   = true
+
+  validation {
+    condition     = length(var.origin_secret) >= 32
+    error_message = "origin_secret은 32자 이상이어야 합니다."
+  }
+}

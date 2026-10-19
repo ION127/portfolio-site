@@ -1,6 +1,6 @@
 # 집 PC에서 도는 앱(블랙잭 학습 데모)을 https://<subdomain>.<domain>으로 연다.
 # 방문자 ─HTTPS→ CloudFront(ACM 인증서) ─HTTP:origin_port→ 공유기 포트포워딩 → PC의 앱
-# PC가 꺼져 있으면 CloudFront는 502/504를 돌려준다.
+# PC가 꺼져 있으면 CloudFront는 502/504를 돌려준다. 공인 IP로 직접 들어온 요청은 앱이 비밀 헤더를 보고 403으로 막는다.
 
 locals {
   app_name    = "${var.subdomain}.${var.domain_name}"
@@ -69,6 +69,12 @@ resource "aws_cloudfront_distribution" "app" {
   origin {
     origin_id   = local.origin_id
     domain_name = aws_route53_record.origin.name
+
+    # 공인 IP의 오리진 포트는 바깥에 열려 있다. 앱(BJ_ORIGIN_SECRET)이 이 헤더가 맞는 요청만 받아, CloudFront를 거친 HTTPS 접속만 화면을 볼 수 있다.
+    custom_header {
+      name  = "X-Origin-Verify"
+      value = var.origin_secret
+    }
 
     custom_origin_config {
       http_port              = var.origin_port

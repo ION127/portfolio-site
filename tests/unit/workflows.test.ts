@@ -57,10 +57,10 @@ describe('ci workflow', () => {
     for (const command of ['npm ci', 'npm run check', 'npm test', 'npm run test:e2e']) expect(run).toContain(command);
   });
 
-  it('formats, validates and tests both terraform stacks and lints the workflows', () => {
+  it('formats, validates and tests every terraform stack and lints the workflows', () => {
     const run = script(ci.jobs.static);
     expect(run).toContain('terraform fmt -check -recursive infra');
-    expect(run).toContain('for dir in infra/bootstrap infra/site');
+    expect(run).toContain('for dir in infra/bootstrap infra/site infra/blackjack');
     expect(run).toContain('terraform -chdir="$dir" validate');
     expect(run).toContain('terraform -chdir="$dir" test');
     expect(ci.jobs.static.steps?.some((s) => s.uses?.startsWith('docker://rhysd/actionlint:'))).toBe(true);

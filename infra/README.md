@@ -4,16 +4,17 @@
 |---|---|---|---|
 | `bootstrap/` | 사람(PC). 처음 한 번, 그리고 IAM·예산을 바꿀 때 | `s3://<상태 버킷>/bootstrap/terraform.tfstate` | 상태 버킷, GitHub OIDC 공급자, IAM 역할 2개, 월 예산 알림 |
 | `site/` | GitHub Actions(`deploy.yml`) | `s3://<상태 버킷>/site/terraform.tfstate` | 사이트 버킷, OAC, CloudFront 배포, 주소 변환 함수. 도메인을 쓰면 ACM 인증서와 Route 53 레코드 |
+| `blackjack/` | 사람(PC) | `s3://<상태 버킷>/blackjack/terraform.tfstate` | 집 PC에서 도는 블랙잭 학습 데모를 `https://blackjack.<도메인>`으로 여는 CloudFront 배포, ACM 인증서, Route 53 레코드 |
 
 ## 로컬에서는 `scripts/tf.sh`로 실행한다
 
-AWS provider는 800MB가 넘는다. 이 저장소는 OneDrive 폴더에 있어서 `terraform init`이 만드는 `.terraform/`이 그대로 동기화된다. `scripts/tf.sh <bootstrap|site> <terraform 인자...>`는 작업 데이터를 `~/.terraform-data/portfolio-site/<묶음>`에, provider 캐시를 `~/.terraform.d/plugin-cache`에 두고 `terraform -chdir=infra/<묶음>`을 실행한다. CI는 이 래퍼 없이 그냥 `terraform`을 쓴다.
+AWS provider는 800MB가 넘는다. 이 저장소는 OneDrive 폴더에 있어서 `terraform init`이 만드는 `.terraform/`이 그대로 동기화된다. `scripts/tf.sh <bootstrap|site|blackjack> <terraform 인자...>`는 작업 데이터를 `~/.terraform-data/portfolio-site/<묶음>`에, provider 캐시를 `~/.terraform.d/plugin-cache`에 두고 `terraform -chdir=infra/<묶음>`을 실행한다. CI는 이 래퍼 없이 그냥 `terraform`을 쓴다.
 
 ## AWS 없이 검사
 
 ```bash
 terraform fmt -check -recursive infra
-for stack in bootstrap site; do
+for stack in bootstrap site blackjack; do
   scripts/tf.sh "$stack" init -backend=false
   scripts/tf.sh "$stack" validate
   scripts/tf.sh "$stack" test   # mock provider라 AWS에 요청하지 않는다
@@ -113,3 +114,33 @@ scripts/tf.sh site force-unlock <잠금 ID>
    첫 적용은 인증서 검증과 CloudFront 반영을 기다리느라 수십 분까지 걸린다. 끝나면 `site_url`이 `https://<도메인>`이 되고, 사이트도 그 주소로 빌드된다(canonical·hreflang·사이트맵).
 
 도메인을 떼려면 `SITE_DOMAIN`을 지우고 다시 배포한다. 레코드와 인증서가 지워지고 CloudFront 기본 주소로 돌아간다.
+
+## 집 PC의 앱을 서브도메인으로 열기 (blackjack)
+
+집 PC에서 도는 블랙잭 학습 데모(uvicorn, 8000번)를 `https://blackjack.<도메인>`으로 연다. 공유기에서 공인 IP의 8000번이 PC로 포트포워딩되어 있어야 한다.
+
+```
+방문자 ─HTTPS→ CloudFront(ACM 인증서) ─HTTP:8000→ origin-blackjack.<도메인>(집 공인 IP) → 공유기 → PC의 uvicorn
+```
+
+- 경로(`/blackjack`)가 아니라 서브도메인을 쓴다. 앱이 `/style.css`, `/api/...`처럼 사이트 맨 앞 경로를 기준으로 짜여 있어서다.
+- 게임 상태와 로그인 API는 사람마다 다르므로 캐시하지 않고(CachingDisabled), 헤더 · 쿠키 · 쿼리를 그대로 넘긴다(AllViewerExceptHostHeader).
+- 집 IP는 저장소에 넣지 않는다. `infra/blackjack/terraform.tfvars`(git에 안 올라감)에 적는다.
+
+```bash
+cat > infra/blackjack/terraform.tfvars <<'TFVARS'
+domain_name = "jjcloud.dev"
+origin_ip   = "<집 공인 IP>"   # curl https://checkip.amazonaws.com
+TFVARS
+export AWS_PROFILE=portfolio-admin
+scripts/tf.sh blackjack init -backend-config="bucket=<상태 버킷>"
+scripts/tf.sh blackjack plan
+scripts/tf.sh blackjack apply
+```
+
+알아 둘 것:
+
+- PC가 꺼져 있거나 앱이 멈추면 CloudFront가 502/504를 돌려준다.
+- 가정용 IP가 바뀌면 `origin_ip`만 고쳐 다시 apply한다(오리진 레코드 TTL 60초).
+- 방문자 ↔ CloudFront는 HTTPS지만 CloudFront ↔ 집 PC 구간은 HTTP이고, 공인 IP의 8000번도 그대로 열려 있다. 막으려면 CloudFront가 비밀 헤더를 붙이고 앱이 그 헤더 없는 요청을 거절하게 한다.
+- 앱은 접속자 IP를 `request.client.host`로 보는데, CloudFront를 거치면 CloudFront 주소가 보인다. IP별 요청 제한은 같은 CloudFront 지점을 쓰는 사람끼리 나눠 쓰게 된다.
